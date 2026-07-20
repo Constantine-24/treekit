@@ -246,12 +246,9 @@ export class TreeState<T> {
 
   /** Removes a node and its whole subtree. Returns whether it was found. */
   remove(node: TreeNode<T>): boolean {
-    const siblings = node.parent ? node.parent.children : this._roots;
-    const index = siblings ? siblings.indexOf(node) : -1;
-    if (!siblings || index < 0) {
+    if (!this._detach(node)) {
       return false;
     }
-    siblings.splice(index, 1);
     this._recompute();
     this._notify();
     return true;
@@ -316,12 +313,15 @@ export class TreeState<T> {
     return input;
   }
 
-  private _detach(node: TreeNode<T>): void {
+  /** Unlinks a node from its sibling list. Returns whether it was found. */
+  private _detach(node: TreeNode<T>): boolean {
     const siblings = node.parent ? node.parent.children : this._roots;
     const index = siblings ? siblings.indexOf(node) : -1;
-    if (siblings && index >= 0) {
-      siblings.splice(index, 1);
+    if (!siblings || index < 0) {
+      return false;
     }
+    siblings.splice(index, 1);
+    return true;
   }
 
   private _insert(node: TreeNode<T>, target: DropTarget<T>): void {

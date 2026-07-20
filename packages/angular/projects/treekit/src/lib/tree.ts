@@ -166,14 +166,15 @@ export class TkTree<T> {
         continue;
       }
       const expandableFolder = !!node.isFolder || !!node.expandable;
+      const expandedNow = state.isExpandedNow(node);
       result.push({
         node,
         index: item.index,
         start: item.start,
         size: item.size,
         expandable: !!(node.isFolder && node.children?.length) || !!node.expandable,
-        expanded: state.isExpandedNow(node),
-        ariaExpanded: expandableFolder ? state.isExpandedNow(node) : null,
+        expanded: expandedNow,
+        ariaExpanded: expandableFolder ? expandedNow : null,
         canDrag: !readonly && node.canDrag !== false,
       });
     }
