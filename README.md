@@ -30,6 +30,57 @@ enters the layout; a single insertion line (or folder highlight) is drawn on top
 - **Headless** — the core has no framework, no RxJS, no DOM framework assumptions beyond the
   standard DOM APIs. Bring your own rendering, or use the Angular adapter.
 
+## Quick start
+
+Angular:
+
+```ts
+import { TkTree, TkTreeNodeDef } from '@treekit/angular';
+import { TreeState } from '@treekit/core';
+
+@Component({
+  imports: [TkTree, TkTreeNodeDef],
+  template: `
+    <tk-tree [state]="state" [rowHeight]="28" (dropElement)="onDrop($event)">
+      <ng-template tkTreeNodeDef let-node>{{ node.name }}</ng-template>
+    </tk-tree>
+  `,
+})
+export class Explorer {
+  state = new TreeState<MyItem>();
+
+  onDrop(drop: DropEvent<MyItem>): void {
+    if (drop.node && drop.target) {
+      this.state.move(drop.node, drop.target);
+    }
+  }
+}
+```
+
+Any framework (or none) — the same engine against plain DOM:
+
+```ts
+import { DndEngine, FixedHeightVirtualizer, TreeState } from '@treekit/core';
+
+const state = new TreeState<MyItem>();
+state.setSource(myRoots);
+
+const virtualizer = new FixedHeightVirtualizer({ rowHeight: 28 });
+const engine = new DndEngine<MyItem>({
+  getVisibleNodes: () => state.visibleNodes(),
+  onDrop: drop => drop.node && drop.target && state.move(drop.node, drop.target),
+  canDropAt: (node, target) => (node ? state.canMove(node, target) : true),
+});
+
+state.subscribe(render);
+virtualizer.attach(viewport, render);
+engine.attach(viewport, content);
+```
+
+See the runnable demos: [`apps/demo-angular`](apps/demo-angular) (10k nodes, palette drag,
+filter, lazy branch, virtualizer toggle) and [`apps/demo-vanilla`](apps/demo-vanilla)
+(the headless proof — the whole demo ships under 6 kB gzipped).
+
 ## Rules & limitations (read before adopting)
 
 - **Native HTML5 DnD does not fire from touch gestures on Android Chrome.** Desktop, mouse, and pen

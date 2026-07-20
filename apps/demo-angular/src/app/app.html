@@ -1,0 +1,54 @@
+<header>
+  <h1>treekit / Angular</h1>
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Filter…"
+      aria-label="Filter tree"
+      #filter
+      (input)="onFilter(filter.value)"
+    />
+    <button type="button" (click)="state.expandAll()">Expand all</button>
+    <button type="button" (click)="state.collapseAll()">Collapse all</button>
+    <label>
+      <input type="checkbox" [checked]="useTanStack()" (change)="useTanStack.set(!useTanStack())" />
+      TanStack virtualizer
+    </label>
+    <label>
+      <input type="checkbox" [checked]="isReadonly()" (change)="isReadonly.set(!isReadonly())" />
+      Readonly
+    </label>
+  </div>
+  @if (lastDrop(); as message) {
+    <p class="status" role="status">{{ message }}</p>
+  }
+</header>
+<main>
+  <aside aria-label="Palette">
+    <h2>Palette</h2>
+    <p class="hint">Drag a chip onto the tree, or use Space + arrows on a row.</p>
+    <ul>
+      @for (label of paletteLabels; track label) {
+        <li class="chip" draggable="true" (dragstart)="onPaletteDragStart($event, label)">
+          {{ label }}
+        </li>
+      }
+    </ul>
+  </aside>
+  <tk-tree
+    [state]="state"
+    [virtualizer]="virtualizer()"
+    [rowHeight]="rowHeight"
+    [isReadonly]="isReadonly()"
+    [selectedId]="selectedId()"
+    (dropElement)="onDrop($event)"
+    (nodeClick)="onNodeClick($event)"
+  >
+    <ng-template tkTreeNodeDef let-node>
+      <span class="node-name">{{ node.name }}</span>
+      @if (node.item.unit) {
+        <span class="unit-chip">{{ node.item.unit }}</span>
+      }
+    </ng-template>
+  </tk-tree>
+</main>

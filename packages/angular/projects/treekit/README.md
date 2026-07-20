@@ -1,64 +1,37 @@
-# Treekit
+# @treekit/angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.0.
+`<tk-tree>` — a virtualized Angular tree with native HTML5 drag-and-drop, keyboard-accessible
+DnD, filtering, and lazy loading, built on the headless
+[`@treekit/core`](https://www.npmjs.com/package/@treekit/core). No Material or CDK dependency.
 
-## Code scaffolding
+```ts
+import { TkTree, TkTreeNodeDef } from '@treekit/angular';
+import { TreeState } from '@treekit/core';
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+@Component({
+  imports: [TkTree, TkTreeNodeDef],
+  template: `
+    <tk-tree [state]="state" [rowHeight]="28" (dropElement)="onDrop($event)">
+      <ng-template tkTreeNodeDef let-node>{{ node.name }}</ng-template>
+    </tk-tree>
+  `,
+})
+export class Explorer {
+  state = new TreeState<MyItem>();
 
-```bash
-ng generate component component-name
+  onDrop(drop: DropEvent<MyItem>): void {
+    if (drop.node && drop.target) {
+      this.state.move(drop.node, drop.target);
+    }
+  }
+}
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- The consumer owns the `TreeState` — filtering, lazy loading, and mutations are core API calls.
+- Theme via `--tk-*` CSS custom properties.
+- Variable row heights: pass a `TanStackVirtualizer` (from `@treekit/core/tanstack`) to the
+  `virtualizer` input.
+- Full documentation, demos, and the limitations list live in the
+  [repository README](https://github.com/kpenzin/treekit#readme).
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the library, run:
-
-```bash
-ng build treekit
-```
-
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
-
-### Publishing the Library
-
-Once the project is built, you can publish your library by following these steps:
-
-1. Navigate to the `dist` directory:
-
-   ```bash
-   cd dist/treekit
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+MIT © Konstantin Penzin
