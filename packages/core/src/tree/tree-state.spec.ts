@@ -237,6 +237,36 @@ describe('TreeState', () => {
     });
   });
 
+  describe('filter and expansion interplay', () => {
+    it('a matched collapsed folder is not reported expanded, so toggle expands it', () => {
+      state.setFilter(node => node.name === 'Beta');
+      const beta = state.findById('b')!;
+      expect(state.isExpandedNow(beta)).toBe(false);
+      state.toggle(beta);
+      expect(beta.isExpanded).toBe(true);
+    });
+
+    it('toggling a matched lazy folder under a filter still requests children', () => {
+      const onLoadChildren = vi.fn();
+      const lazyState = new TreeState<string>({ onLoadChildren });
+      lazyState.setSource([
+        { id: 'other', name: 'Other', item: 'O' },
+        { id: 'remote', name: 'Remote', item: 'R', isFolder: true, expandable: true },
+      ]);
+      lazyState.setFilter(node => node.name === 'Remote');
+      const remote = lazyState.findById('remote')!;
+      lazyState.toggle(remote);
+      expect(onLoadChildren).toHaveBeenCalledWith(remote);
+      expect(remote.isLoading).toBe(true);
+    });
+
+    it('still force-expands ancestors of matches', () => {
+      state.setFilter(node => node.name === 'Deep');
+      expect(state.isExpandedNow(state.findById('a')!)).toBe(true);
+      expect(state.isExpandedNow(state.findById('a2')!)).toBe(true);
+    });
+  });
+
   describe('change notification', () => {
     it('notifies subscribers once per mutating call and supports unsubscribe', () => {
       const listener = vi.fn();

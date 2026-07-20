@@ -42,6 +42,12 @@ export class TreeState<T> {
   private _filter: ((node: TreeNode<T>) => boolean) | null = null;
   /** Ids of filter matches plus their ancestors — the filtered universe. */
   private _filterKeepIds: Set<string> | null = null;
+  /**
+   * Ids of ancestors of matches only. These render force-expanded so their
+   * matching descendants are reachable; matched nodes themselves keep their
+   * real expansion state.
+   */
+  private _filterAncestorIds: Set<string> | null = null;
   /** Explicit collapses made while a filter is active; reset on filter change. */
   private readonly _collapsedDuringFilter = new Set<string>();
   private readonly _listeners = new Set<() => void>();
@@ -77,7 +83,7 @@ export class TreeState<T> {
    * revealed ancestors are expanded unless explicitly collapsed by the user.
    */
   isExpandedNow(node: TreeNode<T>): boolean {
-    if (this._filterKeepIds?.has(node.id)) {
+    if (this._filterAncestorIds?.has(node.id)) {
       return !this._collapsedDuringFilter.has(node.id);
     }
     return !!node.isExpanded;
@@ -115,7 +121,7 @@ export class TreeState<T> {
       }
       return;
     }
-    if (this._filterKeepIds?.has(node.id)) {
+    if (this._filterAncestorIds?.has(node.id)) {
       if (this._collapsedDuringFilter.delete(node.id)) {
         this._recompute();
         this._notify();
@@ -131,7 +137,7 @@ export class TreeState<T> {
 
   /** Collapses a node. */
   collapse(node: TreeNode<T>): void {
-    if (this._filterKeepIds?.has(node.id)) {
+    if (this._filterAncestorIds?.has(node.id)) {
       if (!this._collapsedDuringFilter.has(node.id)) {
         this._collapsedDuringFilter.add(node.id);
         this._recompute();
@@ -351,26 +357,31 @@ export class TreeState<T> {
       walk(root, 0);
     }
 
-    this._filterKeepIds = this._computeFilterKeepIds();
+    this._computeFilterSets();
     this._visible = this._flat.filter(node => this._isVisible(node));
   }
 
-  private _computeFilterKeepIds(): Set<string> | null {
+  private _computeFilterSets(): void {
     if (!this._filter) {
-      return null;
+      this._filterKeepIds = null;
+      this._filterAncestorIds = null;
+      return;
     }
     const keep = new Set<string>();
+    const ancestors = new Set<string>();
     for (const node of this._flat) {
       if (this._filter(node)) {
         keep.add(node.id);
         let ancestor = node.parent;
-        while (ancestor && !keep.has(ancestor.id)) {
+        while (ancestor && !ancestors.has(ancestor.id)) {
           keep.add(ancestor.id);
+          ancestors.add(ancestor.id);
           ancestor = ancestor.parent;
         }
       }
     }
-    return keep;
+    this._filterKeepIds = keep;
+    this._filterAncestorIds = ancestors;
   }
 
   private _isVisible(node: TreeNode<T>): boolean {
