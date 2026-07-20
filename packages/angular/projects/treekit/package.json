@@ -1,0 +1,32 @@
+{
+  "name": "@treekit/angular",
+  "version": "0.0.0",
+  "description": "Angular component over @treekit/core: virtualized tree with native HTML5 drag-and-drop, keyboard-accessible DnD, filtering, and lazy loading. No Material or CDK dependency.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kpenzin/treekit.git",
+    "directory": "packages/angular/projects/treekit"
+  },
+  "keywords": [
+    "angular",
+    "tree",
+    "treeview",
+    "drag-and-drop",
+    "virtualized",
+    "accessibility"
+  ],
+  "peerDependencies": {
+    "@angular/common": ">=22.0.0",
+    "@angular/core": ">=22.0.0",
+    "@treekit/core": "workspace:^"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "directory": "../../dist/treekit",
+    "linkDirectory": false
+  }
+}

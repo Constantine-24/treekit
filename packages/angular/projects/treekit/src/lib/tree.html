@@ -1,0 +1,84 @@
+<div
+  #viewport
+  class="tk-viewport"
+  role="tree"
+  tabindex="0"
+  [attr.aria-activedescendant]="activeDescendant()"
+  (keydown)="onKeydown($event)"
+>
+  <div #content class="tk-content" [style.height.px]="totalSize()">
+    @for (item of virtualItems(); track item.index) {
+      @let node = visibleNodes()[item.index];
+      @if (node) {
+        <div
+          class="tk-row"
+          [style.transform]="'translateY(' + item.start + 'px)'"
+          [style.height.px]="item.size"
+        >
+          <div
+            class="tk-node"
+            role="treeitem"
+            [id]="'tk-node-' + node.id"
+            [attr.aria-level]="node.level + 1"
+            [attr.aria-expanded]="ariaExpanded(node)"
+            [attr.aria-selected]="node.id === selectedId()"
+            [attr.data-node-id]="node.id"
+            [class.selected]="node.id === selectedId()"
+            [class.folder-hovered]="node === hoveredFolder()"
+            [class.active]="'tk-node-' + node.id === activeDescendant()"
+            [class.draggable]="canDrag(node)"
+            [style.padding-left.px]="node.level * indentWidth()"
+            [draggable]="canDrag(node)"
+            (click)="onRowClick(node)"
+            (dblclick)="nodeDblClick.emit(node)"
+            (contextmenu)="onContextMenu($event, node)"
+          >
+            @if (isExpandable(node)) {
+              @if (node.isLoading) {
+                <span class="tk-spinner"></span>
+              } @else {
+                <button
+                  type="button"
+                  class="tk-toggle"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  [class.expanded]="isExpandedNow(node)"
+                  (click)="onToggle(node, $event)"
+                >
+                  <svg viewBox="0 0 16 16" width="14" height="14" focusable="false">
+                    <path
+                      d="M6 4l4 4-4 4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+              }
+            } @else {
+              <span class="tk-toggle-spacer"></span>
+            }
+            @if (nodeDef(); as def) {
+              <ng-container
+                *ngTemplateOutlet="
+                  def.template;
+                  context: { $implicit: node, node: node, index: item.index }
+                "
+              />
+            } @else {
+              <span class="tk-name">{{ node.name }}</span>
+            }
+          </div>
+        </div>
+      }
+    }
+    @if (insertionLine(); as line) {
+      <div class="tk-insertion-line" [style.top.px]="line.top" [style.left.px]="line.left"></div>
+    }
+  </div>
+</div>
+<div class="tk-live-region" aria-live="assertive" aria-atomic="true">
+  {{ announcement() }}
+</div>

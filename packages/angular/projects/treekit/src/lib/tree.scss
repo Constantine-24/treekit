@@ -1,0 +1,154 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.tk-viewport {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+
+  &:focus-visible {
+    outline: 2px solid var(--tk-focus-color, #3b82f6);
+    outline-offset: -2px;
+  }
+}
+
+.tk-content {
+  position: relative;
+  min-width: 100%;
+}
+
+.tk-row {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+}
+
+.tk-node {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-node-gap, 0.25rem);
+  height: 100%;
+  padding-right: var(--tk-node-padding-inline, 0.5rem);
+  border-radius: var(--tk-node-radius, 4px);
+  color: var(--tk-text-color, inherit);
+
+  &:hover {
+    background: var(--tk-hover-bg, rgba(127, 127, 127, 0.08));
+  }
+
+  &.selected {
+    background: var(--tk-selected-bg, rgba(59, 130, 246, 0.12));
+  }
+
+  &.active {
+    outline: 1px solid var(--tk-focus-color, #3b82f6);
+    outline-offset: -1px;
+  }
+
+  &.folder-hovered {
+    background: var(--tk-drop-bg, rgba(59, 130, 246, 0.2));
+    outline: 1px dashed var(--tk-focus-color, #3b82f6);
+    outline-offset: -1px;
+  }
+
+  &.draggable {
+    cursor: grab;
+  }
+}
+
+.tk-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--tk-toggle-size, 1.25rem);
+  height: var(--tk-toggle-size, 1.25rem);
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--tk-toggle-color, currentColor);
+  cursor: pointer;
+
+  svg {
+    transition: transform 120ms ease;
+  }
+
+  &.expanded svg {
+    transform: rotate(90deg);
+  }
+
+  &:hover {
+    background: var(--tk-hover-bg, rgba(127, 127, 127, 0.12));
+  }
+}
+
+.tk-toggle-spacer {
+  flex: 0 0 auto;
+  width: var(--tk-toggle-size, 1.25rem);
+}
+
+.tk-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tk-spinner {
+  flex: 0 0 auto;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-inline: 3px;
+  border: 2px solid var(--tk-spinner-track, rgba(127, 127, 127, 0.25));
+  border-top-color: var(--tk-spinner-color, #3b82f6);
+  border-radius: 50%;
+  animation: tk-spin 0.8s linear infinite;
+}
+
+.tk-insertion-line {
+  position: absolute;
+  right: var(--tk-insertion-inset-right, 0.5rem);
+  height: 2px;
+  margin-top: -1px;
+  background: var(--tk-insertion-color, #3b82f6);
+  border-radius: 1px;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -3px;
+    top: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: inherit;
+  }
+}
+
+.tk-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes tk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-spinner {
+    animation-duration: 1.6s;
+  }
+
+  .tk-toggle svg {
+    transition: none;
+  }
+}
