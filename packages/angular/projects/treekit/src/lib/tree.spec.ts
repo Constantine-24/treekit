@@ -72,7 +72,8 @@ function fixtureSource(): TreeInput<string>[] {
       [virtualizer]="virtualizer"
       [isReadonly]="isReadonly()"
       [selectedId]="selectedId()"
-      (dropElement)="drops.push($event)"
+      ariaLabel="Demo tree"
+      (dropped)="drops.push($event)"
       (nodeClick)="clicks.push($event)"
     >
       @if (useCustomTemplate()) {
@@ -163,6 +164,7 @@ describe('TkTree', () => {
 
   it('exposes tree/treeitem semantics with levels', () => {
     expect(viewport().getAttribute('role')).toBe('tree');
+    expect(viewport().getAttribute('aria-label')).toBe('Demo tree');
     expect(nodeElement('a').getAttribute('role')).toBe('treeitem');
     expect(nodeElement('a').getAttribute('aria-level')).toBe('1');
     nodeElement('a').querySelector<HTMLButtonElement>('.tk-toggle')!.click();

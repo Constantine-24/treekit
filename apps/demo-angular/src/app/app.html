@@ -41,7 +41,8 @@
     [rowHeight]="rowHeight"
     [isReadonly]="isReadonly()"
     [selectedId]="selectedId()"
-    (dropElement)="onDrop($event)"
+    ariaLabel="Sensor hierarchy"
+    (dropped)="onDrop($event)"
     (nodeClick)="onNodeClick($event)"
   >
     <ng-template tkTreeNodeDef let-node>

@@ -34,7 +34,9 @@ export class FixedHeightVirtualizer implements TreeVirtualizer {
     this._viewport = viewport;
     this._onChange = onChange;
 
-    const handleScroll = (): void => this._update(true);
+    const handleScroll = (): void => {
+      this._update(true);
+    };
     viewport.addEventListener('scroll', handleScroll, { passive: true });
 
     let resizeObserver: ResizeObserver | null = null;
@@ -53,9 +55,12 @@ export class FixedHeightVirtualizer implements TreeVirtualizer {
   }
 
   setCount(count: number): void {
-    if (count !== this._count) {
-      this._count = count;
-      this._update(true);
+    if (count === this._count) {
+      return;
+    }
+    this._count = count;
+    if (!this._update(true)) {
+      this._onChange?.();
     }
   }
 
@@ -108,11 +113,16 @@ export class FixedHeightVirtualizer implements TreeVirtualizer {
     this._onChange = null;
   }
 
-  /** Recomputes the rendered range; notifies when it actually changed. */
-  private _update(notify: boolean): void {
+  /**
+   * Recomputes the rendered range; notifies when it actually changed.
+   * Returns whether a notification was sent, so callers whose change is not
+   * range-affecting (e.g. a count change below the fold, which still alters
+   * `totalSize()`) can notify themselves.
+   */
+  private _update(notify: boolean): boolean {
     const viewport = this._viewport;
     if (!viewport) {
-      return;
+      return false;
     }
     const scrollTop = viewport.scrollTop;
     const viewportHeight = viewport.clientHeight;
@@ -124,7 +134,7 @@ export class FixedHeightVirtualizer implements TreeVirtualizer {
       last = Math.min(this._count - 1, lastVisible + this._overscan);
     }
     if (first === this._firstIndex && last === this._lastIndex) {
-      return;
+      return false;
     }
     this._firstIndex = first;
     this._lastIndex = last;
@@ -135,6 +145,8 @@ export class FixedHeightVirtualizer implements TreeVirtualizer {
     this._items = items;
     if (notify) {
       this._onChange?.();
+      return true;
     }
+    return false;
   }
 }

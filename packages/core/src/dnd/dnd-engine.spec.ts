@@ -220,6 +220,12 @@ describe('DndEngine', () => {
       expect(harness.engine.insertionLine()).toEqual({ top: 30, left: 1 * 18 + 8 });
     });
 
+    it('applies updated indentation options to later insertion lines', () => {
+      harness.engine.updateOptions({ indentWidth: 30, insetLeft: 2 });
+      fireDrag(harness.viewport, 'dragover', { y: 32 });
+      expect(harness.engine.insertionLine()).toEqual({ top: 30, left: 1 * 30 + 2 });
+    });
+
     it('places the line under a leaf bottom half', () => {
       fireDrag(harness.viewport, 'dragover', { y: 55 });
       expect(harness.engine.insertionTarget()).toEqual(

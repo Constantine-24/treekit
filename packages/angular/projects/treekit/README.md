@@ -11,7 +11,7 @@ import { TreeState } from '@treekit/core';
 @Component({
   imports: [TkTree, TkTreeNodeDef],
   template: `
-    <tk-tree [state]="state" [rowHeight]="28" (dropElement)="onDrop($event)">
+    <tk-tree [state]="state" [rowHeight]="28" (dropped)="onDrop($event)">
       <ng-template tkTreeNodeDef let-node>{{ node.name }}</ng-template>
     </tk-tree>
   `,

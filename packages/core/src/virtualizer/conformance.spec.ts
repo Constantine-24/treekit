@@ -127,6 +127,13 @@ describe.each(implementations)('$name conformance', ({ create }) => {
     expect(changeCount).toBeGreaterThan(baseline);
   });
 
+  it('fires onChange when the count grows below the visible range', () => {
+    const baseline = changeCount;
+    virtualizer.setCount(COUNT * 2);
+    expect(changeCount).toBeGreaterThan(baseline);
+    expect(virtualizer.totalSize()).toBe(COUNT * 2 * ROW_HEIGHT);
+  });
+
   it('clamps items and total size when the count shrinks', () => {
     virtualizer.setCount(5);
     expect(virtualizer.totalSize()).toBe(5 * ROW_HEIGHT);

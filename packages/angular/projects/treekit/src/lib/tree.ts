@@ -10,6 +10,7 @@ import {
   NgZone,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
@@ -24,6 +25,18 @@ import {
 
 import { TkTreeNodeDef } from './tree-node-def';
 
+/** Precomputed render model for one virtualized row. */
+export interface TkTreeRow<T> {
+  readonly node: TreeNode<T>;
+  readonly index: number;
+  readonly start: number;
+  readonly size: number;
+  readonly expandable: boolean;
+  readonly expanded: boolean;
+  readonly ariaExpanded: boolean | null;
+  readonly canDrag: boolean;
+}
+
 /**
  * Virtualized tree with native HTML5 drag-and-drop and keyboard-accessible
  * DnD, rendered over a consumer-owned `TreeState` from `@treekit/core`.
@@ -34,8 +47,11 @@ import { TkTreeNodeDef } from './tree-node-def';
  * and renders rows through an optional projected `tkTreeNodeDef` template.
  *
  * Accessibility follows the `aria-activedescendant` pattern: the viewport
- * holds focus (`role="tree"`), rows are `treeitem`s addressed by id — correct
- * under virtualization where the active row's element may not be rendered.
+ * holds focus (`role="tree"`) and rows are `treeitem`s addressed by id.
+ * Keyboard navigation keeps the active row rendered via `scrollToIndex`; if
+ * pointer scrolling pushes it out of the rendered window, the
+ * `aria-activedescendant` reference is dropped until it is rendered again,
+ * so the attribute never points at a missing element.
  */
 @Component({
   selector: 'tk-tree',
@@ -58,7 +74,10 @@ export class TkTree<T> {
   /** Row height in pixels for the default fixed-height virtualizer. */
   rowHeight = input(32);
 
-  /** Overscan rows for the default fixed-height virtualizer. */
+  /**
+   * Overscan rows for the default fixed-height virtualizer. Applied when the
+   * tree attaches; later changes take effect on the next re-attach.
+   */
   overscan = input(4);
 
   /** Disables all drag-and-drop interactions. */
@@ -66,6 +85,9 @@ export class TkTree<T> {
 
   /** Id of the selected node for highlighting. */
   selectedId = input<string | null>(null);
+
+  /** Accessible name for the tree. */
+  ariaLabel = input<string | null>(null);
 
   /** Indentation per tree level in pixels. */
   indentWidth = input(18);
@@ -76,7 +98,7 @@ export class TkTree<T> {
   // MARK: - Outputs
 
   /** A pointer or keyboard drop resolved over the tree. */
-  dropElement = output<DropEvent<T>>();
+  dropped = output<DropEvent<T>>();
 
   /** A row was clicked. */
   nodeClick = output<TreeNode<T>>();
@@ -102,8 +124,10 @@ export class TkTree<T> {
    */
   private readonly _version = signal(0);
 
+  private readonly _announcement = signal('');
+
   /** Latest screen-reader announcement from the keyboard DnD mode. */
-  announcement = signal('');
+  announcement = this._announcement.asReadonly();
 
   private _activeVirtualizer: TreeVirtualizer | null = null;
   private _engine: DndEngine<T> | null = null;
@@ -112,11 +136,6 @@ export class TkTree<T> {
   visibleNodes = computed(() => {
     this._version();
     return this.state().visibleNodes();
-  });
-
-  virtualItems = computed(() => {
-    this._version();
-    return this._activeVirtualizer?.items() ?? [];
   });
 
   totalSize = computed(() => {
@@ -134,10 +153,45 @@ export class TkTree<T> {
     return this._engine?.insertionLine() ?? null;
   });
 
+  /** Render models for the currently virtualized rows. */
+  rows = computed<TkTreeRow<T>[]>(() => {
+    this._version();
+    const state = this.state();
+    const visible = state.visibleNodes();
+    const readonly = this.isReadonly();
+    const result: TkTreeRow<T>[] = [];
+    for (const item of this._activeVirtualizer?.items() ?? []) {
+      const node = visible[item.index];
+      if (!node) {
+        continue;
+      }
+      const expandableFolder = !!node.isFolder || !!node.expandable;
+      result.push({
+        node,
+        index: item.index,
+        start: item.start,
+        size: item.size,
+        expandable: !!(node.isFolder && node.children?.length) || !!node.expandable,
+        expanded: state.isExpandedNow(node),
+        ariaExpanded: expandableFolder ? state.isExpandedNow(node) : null,
+        canDrag: !readonly && node.canDrag !== false,
+      });
+    }
+    return result;
+  });
+
+  /**
+   * Id of the active row for `aria-activedescendant` — only while that row is
+   * actually rendered, so the reference never points at a missing element.
+   */
   activeDescendant = computed(() => {
     this._version();
     const active = this._keyboard?.activeNode();
-    return active ? `tk-node-${active.id}` : null;
+    if (!active) {
+      return null;
+    }
+    const rendered = this.rows().some((row) => row.node === active);
+    return rendered ? `tk-node-${active.id}` : null;
   });
 
   constructor() {
@@ -149,10 +203,12 @@ export class TkTree<T> {
     effect((onCleanup) => {
       const viewport = this._viewport()?.nativeElement;
       const content = this._content()?.nativeElement;
+      const state = this.state();
+      const customVirtualizer = this.virtualizer();
       if (!viewport || !content) {
         return;
       }
-      onCleanup(this._attachEngines(viewport, content));
+      onCleanup(this._attachEngines(viewport, content, state, customVirtualizer));
     });
 
     effect(() => {
@@ -167,25 +223,16 @@ export class TkTree<T> {
         active.setRowHeight(rowHeight);
       }
     });
+
+    effect(() => {
+      const indentWidth = this.indentWidth();
+      const autoScrollEdge = this.autoScrollEdge();
+      this._version();
+      this._engine?.updateOptions({ indentWidth, autoScrollEdge });
+    });
   }
 
   // MARK: - Template API
-
-  isExpandable(node: TreeNode<T>): boolean {
-    return !!(node.isFolder && node.children?.length) || !!node.expandable;
-  }
-
-  isExpandedNow(node: TreeNode<T>): boolean {
-    return this.state().isExpandedNow(node);
-  }
-
-  ariaExpanded(node: TreeNode<T>): boolean | null {
-    return node.isFolder || node.expandable ? this.state().isExpandedNow(node) : null;
-  }
-
-  canDrag(node: TreeNode<T>): boolean {
-    return !this.isReadonly() && node.canDrag !== false;
-  }
 
   onToggle(node: TreeNode<T>, event: Event): void {
     event.stopPropagation();
@@ -194,6 +241,7 @@ export class TkTree<T> {
 
   onRowClick(node: TreeNode<T>): void {
     this._keyboard?.setActive(node);
+    this._viewport()?.nativeElement.focus({ preventScroll: true });
     this.nodeClick.emit(node);
   }
 
@@ -210,33 +258,45 @@ export class TkTree<T> {
 
   // MARK: - Wiring
 
-  /** Creates and attaches the virtualizer, DnD engine, and keyboard layer. */
-  private _attachEngines(viewport: HTMLElement, content: HTMLElement): () => void {
-    const state = this.state();
+  /**
+   * Creates and attaches the virtualizer, DnD engine, and keyboard layer.
+   * Scalar option inputs are read untracked so their changes flow through the
+   * dedicated update effects instead of tearing the engines down (which would
+   * reset keyboard focus and any in-flight drag).
+   */
+  private _attachEngines(
+    viewport: HTMLElement,
+    content: HTMLElement,
+    state: TreeState<T>,
+    customVirtualizer: TreeVirtualizer | null,
+  ): () => void {
     const virtualizer =
-      this.virtualizer() ??
-      new FixedHeightVirtualizer({ rowHeight: this.rowHeight(), overscan: this.overscan() });
+      customVirtualizer ??
+      untracked(
+        () =>
+          new FixedHeightVirtualizer({ rowHeight: this.rowHeight(), overscan: this.overscan() }),
+      );
     this._activeVirtualizer = virtualizer;
     virtualizer.setCount(state.visibleNodes().length);
 
     const engine = new DndEngine<T>({
       getVisibleNodes: () => this.state().visibleNodes(),
-      onDrop: (dropEvent) => this._zone.run(() => this.dropElement.emit(dropEvent)),
+      onDrop: (dropEvent) => this._zone.run(() => this.dropped.emit(dropEvent)),
       onStateChange: () => this._bump(),
       isDisabled: () => this.isReadonly(),
       canDropAt: (node, target) => (node ? this.state().canMove(node, target) : true),
-      autoScrollEdge: this.autoScrollEdge(),
-      indentWidth: this.indentWidth(),
+      autoScrollEdge: untracked(this.autoScrollEdge),
+      indentWidth: untracked(this.indentWidth),
     });
     this._engine = engine;
 
     this._keyboard = new KeyboardController<T>({
       state,
-      onDrop: (dropEvent) => this.dropElement.emit(dropEvent),
+      onDrop: (dropEvent) => this.dropped.emit(dropEvent),
       canDropAt: (node, target) => (node ? this.state().canMove(node, target) : true),
       isDisabled: () => this.isReadonly(),
       onStateChange: () => this._bump(),
-      announce: (message) => this.announcement.set(message),
+      announce: (message) => this._announcement.set(message),
       scrollToIndex: (index) => virtualizer.scrollToIndex?.(index),
     });
 

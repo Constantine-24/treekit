@@ -114,6 +114,15 @@ export class DndEngine<T> {
     return this._draggedNode;
   }
 
+  /** Updates runtime-tunable options in place without re-attaching. */
+  updateOptions(
+    options: Partial<
+      Pick<DndEngineOptions<T>, 'autoScrollEdge' | 'autoScrollStep' | 'indentWidth' | 'insetLeft'>
+    >
+  ): void {
+    Object.assign(this._options, options);
+  }
+
   // MARK: - Lifecycle
 
   /**
