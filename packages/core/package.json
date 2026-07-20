@@ -1,0 +1,62 @@
+{
+  "name": "@treekit/core",
+  "version": "0.0.0",
+  "description": "Headless virtualized tree engine with native HTML5 drag-and-drop: tree state, virtualization, DnD, keyboard accessibility. Zero dependencies.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kpenzin/treekit.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "tree",
+    "treeview",
+    "drag-and-drop",
+    "dnd",
+    "virtualized",
+    "virtual-scroll",
+    "headless",
+    "accessibility"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@tanstack/virtual-core": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/virtual-core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@tanstack/virtual-core": "^3.13.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.30.0",
+    "jsdom": "^26.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.35.0",
+    "vitest": "^3.2.0"
+  }
+}
