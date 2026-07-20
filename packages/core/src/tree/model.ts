@@ -36,6 +36,23 @@ export interface TreeNode<T> {
   canDrop?: boolean;
 }
 
+/**
+ * Nested input shape consumed by `TreeState.setSource` and produced by
+ * `TreeState.toHierarchy`. Consumers map their domain data into this shape;
+ * the state builds the linked flat `TreeNode` structure from it.
+ */
+export interface TreeInput<T> {
+  id: string;
+  name: string;
+  item: T;
+  children?: TreeInput<T>[];
+  isExpanded?: boolean;
+  isFolder?: boolean;
+  expandable?: boolean;
+  canDrag?: boolean;
+  canDrop?: boolean;
+}
+
 /** Where a drop lands relative to a reference node. */
 export type DropMode = 'into' | 'before' | 'after';
 
