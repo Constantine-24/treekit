@@ -28,6 +28,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./tanstack": {
+      "types": "./dist/tanstack.d.ts",
+      "import": "./dist/tanstack.js",
+      "require": "./dist/tanstack.cjs"
     }
   },
   "main": "./dist/index.cjs",
