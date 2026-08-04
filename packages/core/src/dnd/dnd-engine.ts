@@ -1,4 +1,5 @@
 import type { DropEvent, DropMode, DropTarget, TreeNode } from '../tree/model';
+import { isDescendantOfAny, normalizeDragNodes } from '../tree/tree-state';
 
 /**
  * Resolves the drop intent from whether the hovered row is a folder and the
@@ -37,10 +38,47 @@ export interface DndEngineOptions<T> {
   isDisabled?: () => boolean;
   /**
    * Validation hook consulted before showing feedback for a target — wire
-   * `TreeState.canMove` here so invalid targets never light up. `node` is
-   * `null` for external drags.
+   * `TreeState.canMoveMany` here so invalid targets never light up. `nodes` is
+   * empty for external drags, which `canMoveMany` accepts vacuously.
    */
-  canDropAt?: (node: TreeNode<T> | null, target: DropTarget<T>) => boolean;
+  canDropAt?: (nodes: readonly TreeNode<T>[], target: DropTarget<T>) => boolean;
+  /**
+   * Supplies the current selection. When a drag starts on a selected row the
+   * whole selection travels; omit for single-node drags.
+   */
+  getSelectedNodes?: () => readonly TreeNode<T>[];
+  /**
+   * Fires when a drag starts on a row *outside* the selection, so the consumer
+   * can collapse the selection onto that row — what every file manager does.
+   */
+  onDragSelectionReset?: (node: TreeNode<T>) => void;
+  /** `dataTransfer` text for the payload. Defaults to the names joined by ", ". */
+  dragText?: (nodes: readonly TreeNode<T>[]) => string;
+  /**
+   * Supplies a custom drag image. The core creates no DOM of its own, so
+   * rendering (and styling) an "N items" badge is the adapter's job.
+   */
+  dragImage?: (nodes: readonly TreeNode<T>[]) => {
+    element: HTMLElement;
+    offsetX: number;
+    offsetY: number;
+  } | null;
+  /**
+   * How long (ms) a collapsed folder must be hovered before it auto-expands
+   * mid-drag — "spring loading". `0` (the default) disables it.
+   */
+  springLoadDelay?: number;
+  /**
+   * Fires when a hovered folder has been held long enough to expand. Like
+   * `onDrop`, this only reports: the consumer calls `TreeState.expand`, so the
+   * core still never mutates the tree.
+   */
+  onSpringLoad?: (node: TreeNode<T>) => void;
+  /**
+   * CSS selector for a drag handle inside a row. When set, drags starting
+   * anywhere else in the row are cancelled.
+   */
+  dragHandleSelector?: string;
   /** Distance from the viewport edge that triggers auto-scroll. Default 36. */
   autoScrollEdge?: number;
   /** Auto-scroll speed in pixels per frame. Default 10. */
@@ -72,11 +110,15 @@ export class DndEngine<T> {
   private _content: HTMLElement | null = null;
   private _document: Document | null = null;
 
-  private _draggedNode: TreeNode<T> | null = null;
+  private _draggedNodes: TreeNode<T>[] = [];
+  private _draggedSet = new Set<TreeNode<T>>();
   private _dragActive = false;
   private _hoveredFolder: TreeNode<T> | null = null;
   private _insertionTarget: InsertionTarget<T> | null = null;
   private _insertionLine: InsertionLine | null = null;
+
+  private _springTarget: TreeNode<T> | null = null;
+  private _springTimer: ReturnType<typeof setTimeout> | null = null;
 
   private _autoScrollDirection = 0;
   private _autoScrollFrame: number | null = null;
@@ -109,15 +151,31 @@ export class DndEngine<T> {
     return this._dragActive;
   }
 
-  /** The row being dragged for an in-tree drag; `null` for external drags. */
+  /**
+   * First dragged row in document order, or `null` for an external drag.
+   * Convenience over `draggedNodes()` for single-node consumers.
+   */
   draggedNode(): TreeNode<T> | null {
-    return this._draggedNode;
+    return this._draggedNodes[0] ?? null;
+  }
+
+  /** Every row being dragged; empty for external drags. */
+  draggedNodes(): readonly TreeNode<T>[] {
+    return this._draggedNodes;
   }
 
   /** Updates runtime-tunable options in place without re-attaching. */
   updateOptions(
     options: Partial<
-      Pick<DndEngineOptions<T>, 'autoScrollEdge' | 'autoScrollStep' | 'indentWidth' | 'insetLeft'>
+      Pick<
+        DndEngineOptions<T>,
+        | 'autoScrollEdge'
+        | 'autoScrollStep'
+        | 'indentWidth'
+        | 'insetLeft'
+        | 'springLoadDelay'
+        | 'dragHandleSelector'
+      >
     >
   ): void {
     Object.assign(this._options, options);
@@ -174,11 +232,38 @@ export class DndEngine<T> {
       event.preventDefault();
       return;
     }
-    this._draggedNode = node;
+    const handleSelector = this._options.dragHandleSelector;
+    if (handleSelector && !(event.target as Element | null)?.closest?.(handleSelector)) {
+      event.preventDefault();
+      return;
+    }
+    const selected = this._options.getSelectedNodes?.() ?? [];
+    let dragged: TreeNode<T>[];
+    if (selected.includes(node)) {
+      dragged = normalizeDragNodes(selected, this._options.getVisibleNodes());
+    } else {
+      this._options.onDragSelectionReset?.(node);
+      dragged = [node];
+    }
+    // Normalization can empty the payload (e.g. every selected node locked);
+    // the grabbed row passed its own `canDrag` check, so fall back to it.
+    if (dragged.length === 0) {
+      dragged = [node];
+    }
+
+    this._draggedNodes = dragged;
+    this._draggedSet = new Set(dragged);
     this._beginDrag();
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'all';
-      event.dataTransfer.setData('text/plain', node.name);
+      event.dataTransfer.setData(
+        'text/plain',
+        this._options.dragText?.(dragged) ?? dragged.map(candidate => candidate.name).join(', ')
+      );
+      const image = this._options.dragImage?.(dragged);
+      if (image) {
+        event.dataTransfer.setDragImage(image.element, image.offsetX, image.offsetY);
+      }
     }
     this._notify();
   }
@@ -202,7 +287,8 @@ export class DndEngine<T> {
     }
     event.preventDefault();
     this._options.onDrop({
-      node: this._draggedNode,
+      node: this._draggedNodes[0] ?? null,
+      nodes: this._draggedNodes,
       target: this._currentTarget(),
       dataTransfer: event.dataTransfer,
     });
@@ -241,12 +327,12 @@ export class DndEngine<T> {
     if (rowElement) {
       const nodeId = rowElement.getAttribute('data-node-id');
       const node = this._options.getVisibleNodes().find(candidate => candidate.id === nodeId);
-      if (node && node !== this._draggedNode) {
+      if (node && !this._isExcluded(node)) {
         const rect = rowElement.getBoundingClientRect();
         const fraction = rect.height > 0 ? (y - rect.top) / rect.height : 0;
         const intent = resolveDropIntent(!!node.isFolder, fraction);
         const target: DropTarget<T> = { node, mode: intent };
-        if (this._options.canDropAt?.(this._draggedNode, target) !== false) {
+        if (this._options.canDropAt?.(this._draggedNodes, target) !== false) {
           if (intent === 'into') {
             hovered = node;
           } else {
@@ -258,6 +344,18 @@ export class DndEngine<T> {
     }
 
     this._setFeedback(hovered, insertion, line);
+  }
+
+  /**
+   * Whether a row can never be a target for the current drag: it is being
+   * dragged, or it lives inside something being dragged.
+   *
+   * Structural rather than delegated to `canDropAt`, which is what it used to
+   * rely on — a consumer that omitted the hook got drop feedback over rows
+   * inside the very subtree they were dragging.
+   */
+  private _isExcluded(node: TreeNode<T>): boolean {
+    return this._draggedSet.has(node) || isDescendantOfAny(node, this._draggedSet);
   }
 
   private _rowFromPoint(x: number, y: number): HTMLElement | null {
@@ -347,8 +445,10 @@ export class DndEngine<T> {
       this._dragActive ||
       this._hoveredFolder !== null ||
       this._insertionTarget !== null ||
-      this._draggedNode !== null;
-    this._draggedNode = null;
+      this._draggedNodes.length > 0;
+    this._draggedNodes = [];
+    this._draggedSet.clear();
+    this._cancelSpringLoad();
     this._dragActive = false;
     this._autoScrollDirection = 0;
     if (this._autoScrollFrame !== null) {
@@ -392,9 +492,39 @@ export class DndEngine<T> {
     this._hoveredFolder = hovered;
     this._insertionTarget = insertion;
     this._insertionLine = line;
+    this._scheduleSpringLoad(hovered);
     if (changed) {
       this._notify();
     }
+  }
+
+  /**
+   * Arms the spring-load timer for a newly hovered folder. Hovering the same
+   * folder again is a no-op, so the timer is not restarted by the stream of
+   * `dragover` events that arrive while the pointer sits still.
+   */
+  private _scheduleSpringLoad(node: TreeNode<T> | null): void {
+    if (node === this._springTarget) {
+      return;
+    }
+    this._cancelSpringLoad();
+    const delay = this._options.springLoadDelay ?? 0;
+    if (!node || delay <= 0 || !this._options.onSpringLoad || node.isExpanded) {
+      return;
+    }
+    this._springTarget = node;
+    this._springTimer = setTimeout(() => {
+      this._springTimer = null;
+      this._options.onSpringLoad?.(node);
+    }, delay);
+  }
+
+  private _cancelSpringLoad(): void {
+    if (this._springTimer !== null) {
+      clearTimeout(this._springTimer);
+      this._springTimer = null;
+    }
+    this._springTarget = null;
   }
 
   private _notify(): void {

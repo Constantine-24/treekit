@@ -11,6 +11,8 @@ interface NodeSpec {
   isFolder?: boolean;
   canDrag?: boolean;
   level?: number;
+  /** Id of the parent row, for tests that need real ancestry. */
+  parent?: string;
 }
 
 interface Harness {
@@ -65,6 +67,16 @@ function createHarness(
     isFolder: spec.isFolder,
     canDrag: spec.canDrag,
   }));
+
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  specs.forEach((spec, index) => {
+    const parent = spec.parent ? byId.get(spec.parent) : undefined;
+    if (parent) {
+      const node = nodes[index]!;
+      node.parent = parent;
+      (parent.children ??= []).push(node);
+    }
+  });
 
   const rows = new Map<string, HTMLElement>();
   specs.forEach((spec, index) => {
@@ -369,5 +381,281 @@ describe('DndEngine', () => {
       expect(pending).toBeLessThanOrEqual(1);
       expect(harness.viewport.scrollTop).toBe(20);
     });
+  });
+});
+
+describe('DndEngine multi-node drag', () => {
+  /**
+   * a (folder)
+   *   a1
+   * b
+   * c
+   */
+  const SPECS: NodeSpec[] = [
+    { id: 'a', isFolder: true },
+    { id: 'a1', parent: 'a', level: 1 },
+    { id: 'b' },
+    { id: 'c' },
+  ];
+
+  let harness: Harness;
+  let selectedIds: string[];
+  let resets: TreeNode<string>[];
+
+  function setup(options: Partial<ConstructorParameters<typeof DndEngine<string>>[0]> = {}): void {
+    harness = createHarness(SPECS, {
+      getSelectedNodes: () => harness.nodes.filter(node => selectedIds.includes(node.id)),
+      onDragSelectionReset: node => resets.push(node),
+      ...options,
+    });
+  }
+
+  /** Vertical centre of the row at `index`. */
+  function rowCentre(index: number): number {
+    return index * ROW_HEIGHT + ROW_HEIGHT / 2;
+  }
+
+  function dragIds(): string[] {
+    return harness.engine.draggedNodes().map(node => node.id);
+  }
+
+  beforeEach(() => {
+    selectedIds = [];
+    resets = [];
+  });
+
+  afterEach(() => {
+    harness.detach();
+    harness.viewport.remove();
+  });
+
+  it('drags the whole selection when the grabbed row is part of it', () => {
+    selectedIds = ['b', 'c'];
+    setup();
+
+    fireDrag(harness.rows.get('b')!, 'dragstart');
+
+    expect(dragIds()).toEqual(['b', 'c']);
+    expect(resets).toEqual([]);
+  });
+
+  it('collapses the selection and drags one row when the grabbed row is outside it', () => {
+    selectedIds = ['b', 'c'];
+    setup();
+
+    fireDrag(harness.rows.get('a')!, 'dragstart');
+
+    expect(dragIds()).toEqual(['a']);
+    expect(resets.map(node => node.id)).toEqual(['a']);
+  });
+
+  it('normalizes the payload to document order and de-nests it', () => {
+    selectedIds = ['a1', 'a'];
+    setup();
+
+    fireDrag(harness.rows.get('a')!, 'dragstart');
+
+    // `a1` rides inside `a`, so it must not be dragged independently.
+    expect(dragIds()).toEqual(['a']);
+  });
+
+  it('shows no drop feedback over any dragged row', () => {
+    selectedIds = ['b', 'c'];
+    setup();
+    fireDrag(harness.rows.get('b')!, 'dragstart');
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(3) });
+
+    expect(harness.engine.hoveredFolder()).toBeNull();
+    expect(harness.engine.insertionTarget()).toBeNull();
+  });
+
+  it('excludes descendants of dragged rows structurally, not via canDropAt', () => {
+    selectedIds = ['a'];
+    // Permissive validation: any exclusion here must come from the engine.
+    setup({ canDropAt: () => true });
+    fireDrag(harness.rows.get('a')!, 'dragstart');
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(1) });
+
+    expect(harness.engine.hoveredFolder()).toBeNull();
+    expect(harness.engine.insertionTarget()).toBeNull();
+  });
+
+  it('passes the whole payload to canDropAt', () => {
+    const seen: string[][] = [];
+    selectedIds = ['b', 'c'];
+    setup({
+      canDropAt: nodes => {
+        seen.push(nodes.map(node => node.id));
+        return true;
+      },
+    });
+    fireDrag(harness.rows.get('b')!, 'dragstart');
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+
+    expect(seen.at(-1)).toEqual(['b', 'c']);
+  });
+
+  it('emits every dragged node on drop, with node as the first of them', () => {
+    selectedIds = ['c', 'b'];
+    setup();
+    fireDrag(harness.rows.get('b')!, 'dragstart');
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+
+    fireDrag(harness.viewport, 'drop', { y: rowCentre(0) });
+
+    const drop = harness.drops[0]!;
+    expect(drop.nodes.map(node => node.id)).toEqual(['b', 'c']);
+    expect(drop.node).toBe(drop.nodes[0]);
+  });
+
+  it('reports an external drag as no nodes at all', () => {
+    setup();
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(2) });
+    fireDrag(harness.viewport, 'drop', { y: rowCentre(2) });
+
+    const drop = harness.drops[0]!;
+    expect(drop.node).toBeNull();
+    expect(drop.nodes).toEqual([]);
+  });
+
+  it('writes the joined names as the transfer text, and honours a dragText override', () => {
+    selectedIds = ['b', 'c'];
+    setup();
+    const dataTransfer = { effectAllowed: '', dropEffect: '', setData: vi.fn(), getData: vi.fn() };
+
+    fireDrag(harness.rows.get('b')!, 'dragstart', { dataTransfer });
+    expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'b, c');
+
+    harness.detach();
+    harness.viewport.remove();
+    setup({ dragText: nodes => `${nodes.length} items` });
+    const custom = { effectAllowed: '', dropEffect: '', setData: vi.fn(), getData: vi.fn() };
+
+    fireDrag(harness.rows.get('b')!, 'dragstart', { dataTransfer: custom });
+    expect(custom.setData).toHaveBeenCalledWith('text/plain', '2 items');
+  });
+
+  it('falls back to the grabbed row when normalization empties the payload', () => {
+    harness = createHarness([{ id: 'locked', canDrag: false }, { id: 'free' }], {
+      getSelectedNodes: () => harness.nodes.filter(node => node.id === 'free'),
+    });
+
+    // `free` is selected, so the whole selection would normally travel — but a
+    // drag starting on `locked` is rejected before that, by canDrag.
+    const event = fireDrag(harness.rows.get('locked')!, 'dragstart');
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(dragIds()).toEqual([]);
+  });
+});
+
+describe('DndEngine spring loading and drag handles', () => {
+  let harness: Harness;
+
+  afterEach(() => {
+    harness.detach();
+    harness.viewport.remove();
+    vi.useRealTimers();
+  });
+
+  function rowCentre(index: number): number {
+    return index * ROW_HEIGHT + ROW_HEIGHT / 2;
+  }
+
+  it('expands a collapsed folder after it has been hovered long enough', () => {
+    vi.useFakeTimers();
+    const sprung: string[] = [];
+    harness = createHarness([{ id: 'folder', isFolder: true }, { id: 'leaf' }], {
+      springLoadDelay: 400,
+      onSpringLoad: node => sprung.push(node.id),
+    });
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+    vi.advanceTimersByTime(399);
+    expect(sprung).toEqual([]);
+
+    vi.advanceTimersByTime(1);
+    expect(sprung).toEqual(['folder']);
+  });
+
+  it('does not restart the timer while the pointer sits on the same folder', () => {
+    vi.useFakeTimers();
+    const sprung: string[] = [];
+    harness = createHarness([{ id: 'folder', isFolder: true }], {
+      springLoadDelay: 400,
+      onSpringLoad: node => sprung.push(node.id),
+    });
+
+    // A stationary pointer still produces a stream of dragover events.
+    for (let step = 0; step < 8; step++) {
+      fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+      vi.advanceTimersByTime(50);
+    }
+
+    expect(sprung).toEqual(['folder']);
+  });
+
+  it('cancels the pending expand when the pointer moves off the folder', () => {
+    vi.useFakeTimers();
+    const sprung: string[] = [];
+    harness = createHarness([{ id: 'folder', isFolder: true }, { id: 'leaf' }], {
+      springLoadDelay: 400,
+      onSpringLoad: node => sprung.push(node.id),
+    });
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+    vi.advanceTimersByTime(200);
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(1) });
+    vi.advanceTimersByTime(400);
+
+    expect(sprung).toEqual([]);
+  });
+
+  it('never springs an already-expanded folder', () => {
+    vi.useFakeTimers();
+    const sprung: string[] = [];
+    harness = createHarness([{ id: 'folder', isFolder: true }], {
+      springLoadDelay: 400,
+      onSpringLoad: node => sprung.push(node.id),
+    });
+    harness.nodes[0]!.isExpanded = true;
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+    vi.advanceTimersByTime(1000);
+
+    expect(sprung).toEqual([]);
+  });
+
+  it('stays off when no delay is configured', () => {
+    vi.useFakeTimers();
+    const sprung: string[] = [];
+    harness = createHarness([{ id: 'folder', isFolder: true }], {
+      onSpringLoad: node => sprung.push(node.id),
+    });
+
+    fireDrag(harness.viewport, 'dragover', { y: rowCentre(0) });
+    vi.advanceTimersByTime(5000);
+
+    expect(sprung).toEqual([]);
+  });
+
+  it('starts a drag only from a handle when one is configured', () => {
+    harness = createHarness([{ id: 'leaf' }], { dragHandleSelector: '.grip' });
+    const row = harness.rows.get('leaf')!;
+    const grip = document.createElement('span');
+    grip.className = 'grip';
+    row.appendChild(grip);
+
+    const fromRow = fireDrag(row, 'dragstart');
+    expect(fromRow.defaultPrevented).toBe(true);
+    expect(harness.engine.isDragging()).toBe(false);
+
+    const fromGrip = fireDrag(grip, 'dragstart');
+    expect(fromGrip.defaultPrevented).toBe(false);
+    expect(harness.engine.draggedNode()?.id).toBe('leaf');
   });
 });

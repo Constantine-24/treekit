@@ -18,12 +18,15 @@ import {
   DropEvent,
   FixedHeightVirtualizer,
   KeyboardController,
+  SelectionModel,
   TreeNode,
   TreeState,
   TreeVirtualizer,
 } from '@treekit/core';
 
 import { TkTreeNodeDef } from './tree-node-def';
+import { TkTreeEmptyDef, TkTreeLoadingDef } from './tree-placeholders';
+import { TkTreeRowMeasure } from './tree-row-measure';
 
 /** Precomputed render model for one virtualized row. */
 export interface TkTreeRow<T> {
@@ -35,6 +38,7 @@ export interface TkTreeRow<T> {
   readonly expanded: boolean;
   readonly ariaExpanded: boolean | null;
   readonly canDrag: boolean;
+  readonly selected: boolean;
 }
 
 /**
@@ -57,8 +61,8 @@ export interface TkTreeRow<T> {
   selector: 'tk-tree',
   templateUrl: './tree.html',
   styleUrl: './tree.scss',
-  imports: [NgTemplateOutlet],
-  host: { class: 'tk-tree' },
+  imports: [NgTemplateOutlet, TkTreeRowMeasure],
+  host: { class: 'tk-tree', '[style.--tk-indent-width]': 'indentWidth() + "px"' },
 })
 export class TkTree<T> {
   private readonly _zone = inject(NgZone);
@@ -83,8 +87,30 @@ export class TkTree<T> {
   /** Disables all drag-and-drop interactions. */
   isReadonly = input(false);
 
-  /** Id of the selected node for highlighting. */
+  /** Id of the selected node for highlighting. Single-select convenience. */
   selectedId = input<string | null>(null);
+
+  /**
+   * Enables ctrl/cmd-click, shift-click, Shift+arrows and Ctrl/Cmd+A, and makes
+   * a drag that starts on a selected row carry the whole selection.
+   *
+   * Left off, the component stays fully controlled exactly as before: clicking
+   * emits `nodeClick` and never moves the highlight on its own, so a consumer
+   * can refuse a selection.
+   *
+   * Note the keyboard change this brings: with multi-select on, `Space` toggles
+   * selection and `Ctrl/Cmd+Space` grabs a row for keyboard drag-and-drop.
+   */
+  multiSelect = input(false);
+
+  /**
+   * Selected node ids. Bind for controlled mode — `[(selectedIds)]` works —
+   * or leave unset and let `multiSelect` drive selection internally.
+   *
+   * Signal inputs only react to identity changes, so a consumer overriding a
+   * selection must emit a new array, not mutate the existing one.
+   */
+  selectedIds = input<readonly string[] | ReadonlySet<string> | null>(null);
 
   /** Accessible name for the tree. */
   ariaLabel = input<string | null>(null);
@@ -94,6 +120,25 @@ export class TkTree<T> {
 
   /** Distance from the viewport edge that triggers drag auto-scroll. */
   autoScrollEdge = input(36);
+
+  /** Draws vertical guide lines down the indentation. */
+  indentGuides = input(false);
+
+  /**
+   * Milliseconds a collapsed folder must be hovered mid-drag before it expands
+   * ("spring loading"). `0` disables it.
+   */
+  springLoadDelay = input(0);
+
+  /**
+   * CSS selector for a drag handle inside a row. When set, drags starting
+   * anywhere else in the row are cancelled — so a row can be draggable only by
+   * an explicit grip.
+   */
+  dragHandleSelector = input<string | null>(null);
+
+  /** Shows the projected `tkTreeLoading` template instead of any rows. */
+  isLoading = input(false);
 
   // MARK: - Outputs
 
@@ -109,9 +154,23 @@ export class TkTree<T> {
   /** A row was right-clicked. */
   nodeContextMenu = output<{ event: MouseEvent; node: TreeNode<T> }>();
 
+  /** Selection changed. Named so `[(selectedIds)]` binds two-way. */
+  selectedIdsChange = output<readonly string[]>();
+
+  /** The same change, resolved to the currently visible nodes in document order. */
+  selectionChange = output<readonly TreeNode<T>[]>();
+
+  /** A folder was expanded from its toggle. Programmatic expansion does not emit. */
+  expanded = output<TreeNode<T>>();
+
+  /** A folder was collapsed from its toggle. Programmatic collapse does not emit. */
+  collapsed = output<TreeNode<T>>();
+
   // MARK: - Projection & view
 
   nodeDef = contentChild(TkTreeNodeDef<T>);
+  emptyDef = contentChild(TkTreeEmptyDef);
+  loadingDef = contentChild(TkTreeLoadingDef);
 
   private readonly _viewport = viewChild<ElementRef<HTMLDivElement>>('viewport');
   private readonly _content = viewChild<ElementRef<HTMLDivElement>>('content');
@@ -129,9 +188,38 @@ export class TkTree<T> {
   /** Latest screen-reader announcement from the keyboard DnD mode. */
   announcement = this._announcement.asReadonly();
 
-  private _activeVirtualizer: TreeVirtualizer | null = null;
-  private _engine: DndEngine<T> | null = null;
-  private _keyboard: KeyboardController<T> | null = null;
+  /**
+   * Live engine handles. These are signals rather than plain fields so the
+   * option-push effects below can depend on the handle itself instead of
+   * reading `_version` — which would re-run them on every scroll frame and
+   * every `dragover`.
+   */
+  private readonly _activeVirtualizer = signal<TreeVirtualizer | null>(null);
+  private readonly _engine = signal<DndEngine<T> | null>(null);
+  private readonly _keyboard = signal<KeyboardController<T> | null>(null);
+  private readonly _selection = signal<SelectionModel<T> | null>(null);
+
+  private static readonly _noIds: ReadonlySet<string> = new Set<string>();
+
+  /**
+   * Selected ids for this render, derived once rather than per row.
+   *
+   * In multi-select mode the internal model is the source of truth (with
+   * `[selectedIds]` written into it by a dedicated effect); otherwise the
+   * inputs are read directly, keeping the fully-controlled contract.
+   */
+  private readonly _selectedIdSet = computed<ReadonlySet<string>>(() => {
+    this._version();
+    if (this.multiSelect()) {
+      return this._selection()?.selectedIds() ?? TkTree._noIds;
+    }
+    const ids = this.selectedIds();
+    if (ids) {
+      return ids instanceof Set ? ids : new Set(ids);
+    }
+    const id = this.selectedId();
+    return id ? new Set([id]) : TkTree._noIds;
+  });
 
   visibleNodes = computed(() => {
     this._version();
@@ -140,17 +228,17 @@ export class TkTree<T> {
 
   totalSize = computed(() => {
     this._version();
-    return this._activeVirtualizer?.totalSize() ?? 0;
+    return this._activeVirtualizer()?.totalSize() ?? 0;
   });
 
   hoveredFolder = computed(() => {
     this._version();
-    return this._engine?.hoveredFolder() ?? null;
+    return this._engine()?.hoveredFolder() ?? null;
   });
 
   insertionLine = computed(() => {
     this._version();
-    return this._engine?.insertionLine() ?? null;
+    return this._engine()?.insertionLine() ?? null;
   });
 
   /** Render models for the currently virtualized rows. */
@@ -159,8 +247,9 @@ export class TkTree<T> {
     const state = this.state();
     const visible = state.visibleNodes();
     const readonly = this.isReadonly();
+    const selectedIds = this._selectedIdSet();
     const result: TkTreeRow<T>[] = [];
-    for (const item of this._activeVirtualizer?.items() ?? []) {
+    for (const item of this._activeVirtualizer()?.items() ?? []) {
       const node = visible[item.index];
       if (!node) {
         continue;
@@ -176,9 +265,22 @@ export class TkTree<T> {
         expanded: expandedNow,
         ariaExpanded: expandableFolder ? expandedNow : null,
         canDrag: !readonly && node.canDrag !== false,
+        selected: selectedIds.has(node.id),
       });
     }
     return result;
+  });
+
+  /**
+   * The active virtualizer when it measures rows, otherwise `null`.
+   *
+   * Rows pin their height only in the fixed-size case. A measured row has to be
+   * free to size to its content — pinning it would feed the estimate straight
+   * back as the measurement and variable heights could never converge.
+   */
+  protected readonly measuringVirtualizer = computed<TreeVirtualizer | null>(() => {
+    const virtualizer = this._activeVirtualizer();
+    return virtualizer?.measure ? virtualizer : null;
   });
 
   /**
@@ -187,7 +289,7 @@ export class TkTree<T> {
    */
   activeDescendant = computed(() => {
     this._version();
-    const active = this._keyboard?.activeNode();
+    const active = this._keyboard()?.activeNode();
     if (!active) {
       return null;
     }
@@ -197,8 +299,22 @@ export class TkTree<T> {
 
   constructor() {
     effect((onCleanup) => {
-      const unsubscribe = this.state().subscribe(() => this._bump());
+      const unsubscribe = this.state().subscribe(() => {
+        // Structural changes can remove selected nodes; dropping their ids is
+        // only observable to consumers that serialize the raw set, but it is
+        // cheap next to the recompute that just ran.
+        this._selection()?.prune();
+        this._bump();
+      });
       onCleanup(unsubscribe);
+    });
+
+    effect(() => {
+      const ids = this.selectedIds();
+      const selection = this._selection();
+      if (ids && selection) {
+        selection.setIds(ids);
+      }
     });
 
     effect((onCleanup) => {
@@ -213,13 +329,12 @@ export class TkTree<T> {
     });
 
     effect(() => {
-      this._activeVirtualizer?.setCount(this.visibleNodes().length);
+      this._activeVirtualizer()?.setCount(this.visibleNodes().length);
     });
 
     effect(() => {
       const rowHeight = this.rowHeight();
-      this._version();
-      const active = this._activeVirtualizer;
+      const active = this._activeVirtualizer();
       if (active instanceof FixedHeightVirtualizer) {
         active.setRowHeight(rowHeight);
       }
@@ -228,8 +343,14 @@ export class TkTree<T> {
     effect(() => {
       const indentWidth = this.indentWidth();
       const autoScrollEdge = this.autoScrollEdge();
-      this._version();
-      this._engine?.updateOptions({ indentWidth, autoScrollEdge });
+      const springLoadDelay = this.springLoadDelay();
+      const dragHandleSelector = this.dragHandleSelector() ?? undefined;
+      this._engine()?.updateOptions({
+        indentWidth,
+        autoScrollEdge,
+        springLoadDelay,
+        dragHandleSelector,
+      });
     });
   }
 
@@ -237,11 +358,52 @@ export class TkTree<T> {
 
   onToggle(node: TreeNode<T>, event: Event): void {
     event.stopPropagation();
-    this.state().toggle(node);
+    const state = this.state();
+    const wasExpanded = state.isExpandedNow(node);
+    state.toggle(node);
+    const isExpanded = state.isExpandedNow(node);
+    if (isExpanded !== wasExpanded) {
+      (isExpanded ? this.expanded : this.collapsed).emit(node);
+    }
   }
 
-  onRowClick(node: TreeNode<T>): void {
-    this._keyboard?.setActive(node);
+  // MARK: - Imperative API
+
+  /** Expands every loaded folder. Does not trigger lazy loads. */
+  expandAll(): void {
+    this.state().expandAll();
+  }
+
+  /** Collapses every folder. */
+  collapseAll(): void {
+    this.state().collapseAll();
+  }
+
+  /**
+   * Scrolls a node into view. Returns whether it was found among the visible
+   * rows — a node hidden by collapse or filter cannot be scrolled to.
+   */
+  scrollToNode(nodeOrId: TreeNode<T> | string): boolean {
+    const id = typeof nodeOrId === 'string' ? nodeOrId : nodeOrId.id;
+    const index = this.state()
+      .visibleNodes()
+      .findIndex((node) => node.id === id);
+    if (index < 0) {
+      return false;
+    }
+    this._activeVirtualizer()?.scrollToIndex?.(index);
+    return true;
+  }
+
+  onRowClick(node: TreeNode<T>, event: MouseEvent): void {
+    this._keyboard()?.setActive(node);
+    const selection = this._selection();
+    if (this.multiSelect() && selection) {
+      selection.selectOn(node, {
+        ctrlOrMeta: event.ctrlKey || event.metaKey,
+        shift: event.shiftKey,
+      });
+    }
     this._viewport()?.nativeElement.focus({ preventScroll: true });
     this.nodeClick.emit(node);
   }
@@ -252,7 +414,7 @@ export class TkTree<T> {
   }
 
   onKeydown(event: KeyboardEvent): void {
-    if (this._keyboard?.handleKeyDown(event)) {
+    if (this._keyboard()?.handleKeyDown(event)) {
       event.preventDefault();
     }
   }
@@ -277,24 +439,47 @@ export class TkTree<T> {
         () =>
           new FixedHeightVirtualizer({ rowHeight: this.rowHeight(), overscan: this.overscan() }),
       );
-    this._activeVirtualizer = virtualizer;
-    virtualizer.setCount(state.visibleNodes().length);
+    const selection = new SelectionModel<T>({
+      state,
+      onChange: () => {
+        this._bump();
+        this._zone.run(() => {
+          this.selectedIdsChange.emit([...selection.selectedIds()]);
+          this.selectionChange.emit(selection.selectedNodes());
+        });
+      },
+    });
 
     const engine = new DndEngine<T>({
       getVisibleNodes: () => this.state().visibleNodes(),
+      getSelectedNodes: () => (this.multiSelect() ? selection.selectedNodes() : []),
+      onDragSelectionReset: (node) => {
+        if (this.multiSelect()) {
+          selection.select(node);
+        }
+      },
       onDrop: (dropEvent) => this._zone.run(() => this.dropped.emit(dropEvent)),
       onStateChange: () => this._bump(),
       isDisabled: () => this.isReadonly(),
-      canDropAt: (node, target) => (node ? this.state().canMove(node, target) : true),
+      canDropAt: (nodes, target) => this.state().canMoveMany(nodes, target),
       autoScrollEdge: untracked(this.autoScrollEdge),
       indentWidth: untracked(this.indentWidth),
+      springLoadDelay: untracked(this.springLoadDelay),
+      dragHandleSelector: untracked(this.dragHandleSelector) ?? undefined,
+      // Reports only — the core never mutates the tree, so expanding is ours.
+      onSpringLoad: (node) => this._zone.run(() => this.state().expand(node)),
     });
-    this._engine = engine;
 
-    this._keyboard = new KeyboardController<T>({
+    const keyboard = new KeyboardController<T>({
       state,
-      onDrop: (dropEvent) => this.dropped.emit(dropEvent),
-      canDropAt: (node, target) => (node ? this.state().canMove(node, target) : true),
+      selection,
+      isMultiSelectEnabled: () => this.multiSelect(),
+      // Wrapped for the same reason as the pointer engine: `onDrop` calls into
+      // consumer code, which may update state the consumer renders elsewhere.
+      // The internal `_bump`/`announce` callbacks are plain signal writes and
+      // notify the scheduler on their own, so they are deliberately unwrapped.
+      onDrop: (dropEvent) => this._zone.run(() => this.dropped.emit(dropEvent)),
+      canDropAt: (nodes, target) => this.state().canMoveMany(nodes, target),
       isDisabled: () => this.isReadonly(),
       onStateChange: () => this._bump(),
       announce: (message) => this._announcement.set(message),
@@ -307,14 +492,24 @@ export class TkTree<T> {
       detachVirtualizer = virtualizer.attach(viewport, () => this._bump());
       detachEngine = engine.attach(viewport, content);
     });
+
+    // Counted after attaching so the virtualizer already has its viewport and
+    // change callback, and can compute and report its first range.
+    virtualizer.setCount(state.visibleNodes().length);
+
+    this._activeVirtualizer.set(virtualizer);
+    this._engine.set(engine);
+    this._keyboard.set(keyboard);
+    this._selection.set(selection);
     this._bump();
 
     return () => {
       detachVirtualizer?.();
       detachEngine?.();
-      this._activeVirtualizer = null;
-      this._engine = null;
-      this._keyboard = null;
+      this._activeVirtualizer.set(null);
+      this._engine.set(null);
+      this._keyboard.set(null);
+      this._selection.set(null);
     };
   }
 

@@ -22,6 +22,9 @@ enters the layout; a single insertion line (or folder highlight) is drawn on top
   plain `draggable` + `dataTransfer`. Cross-tree and cross-window drags work for free.
 - **Precise drop feedback** — pointer-position hit-testing, `into`/`before`/`after` intent (folder
   middle 50% = into), explicit insertion line, edge auto-scroll during drag.
+- **Multi-select and multi-node drag** — ctrl/cmd-click, shift-click ranges, `Ctrl/Cmd+A`, and a
+  drag that carries the whole selection. Payloads are normalized: document order, de-duplicated,
+  and de-nested so a folder never moves alongside its own descendants.
 - **Keyboard-accessible DnD** — every pointer drag operation has a keyboard equivalent
   (grab → move → drop) emitting the same events; `role=tree` semantics and live-region announcements.
 - **Filtering** — predicate-based; reveals matches plus their ancestors, auto-expanded; restores
@@ -68,8 +71,8 @@ state.setSource(myRoots);
 const virtualizer = new FixedHeightVirtualizer({ rowHeight: 28 });
 const engine = new DndEngine<MyItem>({
   getVisibleNodes: () => state.visibleNodes(),
-  onDrop: drop => drop.node && drop.target && state.move(drop.node, drop.target),
-  canDropAt: (node, target) => (node ? state.canMove(node, target) : true),
+  onDrop: drop => drop.target && state.moveMany([...drop.nodes], drop.target),
+  canDropAt: (nodes, target) => state.canMoveMany(nodes, target),
 });
 
 state.subscribe(render);
@@ -77,9 +80,16 @@ virtualizer.attach(viewport, render);
 engine.attach(viewport, content);
 ```
 
-See the runnable demos: [`apps/demo-angular`](apps/demo-angular) (10k nodes, palette drag,
-filter, lazy branch, virtualizer toggle) and [`apps/demo-vanilla`](apps/demo-vanilla)
-(the headless proof — the whole demo ships under 6 kB gzipped).
+See the runnable demos. [`apps/demo-angular`](apps/demo-angular) is the showcase — 10k nodes,
+multi-select, palette drag, filtering, a lazy branch, spring-loaded folders, and a virtualizer
+toggle — and it reports the library's own drop arithmetic live: hover a row mid-drag and it draws
+the 0.25 / 0.5 / 0.75 intent bands while printing the pointer fraction and the `resolveDropIntent`
+call that produced the result. [`apps/demo-vanilla`](apps/demo-vanilla) is the headless proof, the
+same engine against plain DOM in under 7 kB gzipped.
+
+```sh
+cd apps/demo-angular && pnpm start   # http://localhost:4200
+```
 
 ## Rules & limitations (read before adopting)
 
@@ -90,7 +100,12 @@ filter, lazy branch, virtualizer toggle) and [`apps/demo-vanilla`](apps/demo-van
   heights are supported through the optional `@treekit/core/tanstack` adapter, which requires
   installing `@tanstack/virtual-core`.
 - The tree **owns its scroll viewport**. There is no window-scroll / scroll-margin mode.
-- v1 drags **one node at a time**. Multi-select and multi-node drag are the headline v2 items.
+- **Enabling multi-select changes one keybinding.** `Space` becomes "toggle selection" and
+  `Ctrl/Cmd+Space` becomes "grab for keyboard drag". Without multi-select, `Space` still grabs.
+  Every unambiguous alternative chord collides with a browser or OS shortcut.
+- Selection is **explicit**: selecting a folder does not select its descendants. A move already
+  relocates the whole subtree, so implying descendants would ask to move them twice over. Use the
+  exported `denestNodes` if you need the same normalization for a bulk action of your own.
 - RTL layouts are untested in v1.
 
 ## Development

@@ -51,8 +51,8 @@ function applyDrop(drop: DropEvent<null>): void {
   if (!drop.target) {
     return;
   }
-  if (drop.node) {
-    state.move(drop.node, drop.target);
+  if (drop.nodes.length > 0) {
+    state.moveMany([...drop.nodes], drop.target);
     return;
   }
   const label = drop.dataTransfer?.getData(PALETTE_MIME);
@@ -65,13 +65,13 @@ const engine = new DndEngine<null>({
   getVisibleNodes: () => state.visibleNodes(),
   onDrop: applyDrop,
   onStateChange: render,
-  canDropAt: (node, target) => (node ? state.canMove(node, target) : true),
+  canDropAt: (nodes, target) => state.canMoveMany(nodes, target),
 });
 
 const keyboard = new KeyboardController<null>({
   state,
   onDrop: applyDrop,
-  canDropAt: (node, target) => (node ? state.canMove(node, target) : true),
+  canDropAt: (nodes, target) => state.canMoveMany(nodes, target),
   announce: message => {
     liveRegion.textContent = message;
   },

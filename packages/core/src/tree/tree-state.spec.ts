@@ -148,6 +148,82 @@ describe('TreeState', () => {
     });
   });
 
+  describe('moveMany', () => {
+    function node(id: string): TreeNode<string> {
+      return state.findById(id)!;
+    }
+
+    it('preserves relative order when inserting before a reference', () => {
+      state.moveMany([node('a1'), node('a2')], { node: node('c'), mode: 'before' });
+
+      expect(ids(state.nodes())).toEqual(['a', 'b', 'a1', 'a2', 'a2x', 'c']);
+    });
+
+    it('preserves relative order when inserting after a reference', () => {
+      // The case a naive loop of single inserts reverses, because each insert
+      // re-resolves the reference index and pushes ahead of the previous one.
+      state.moveMany([node('a1'), node('a2')], { node: node('c'), mode: 'after' });
+
+      expect(ids(state.nodes())).toEqual(['a', 'b', 'c', 'a1', 'a2', 'a2x']);
+    });
+
+    it('handles dragged siblings that sit before the reference in the same list', () => {
+      // Detaching `a` and `b` shifts `c`'s index; resolving the destination
+      // before every detach completes would land them in the wrong slot.
+      state.moveMany([node('a'), node('b')], { node: node('c'), mode: 'after' });
+
+      expect(ids(state.roots())).toEqual(['c', 'a', 'b']);
+    });
+
+    it('appends into a folder in document order, not the order given', () => {
+      // `a1` precedes `c` in the flat list, so it lands first regardless of how
+      // the caller (or the user's click sequence) ordered the argument.
+      state.moveMany([node('c'), node('a1')], { node: node('b'), mode: 'into' });
+
+      expect(ids(state.findById('b')!.children!)).toEqual(['a1', 'c']);
+    });
+
+    it('de-nests, so a selected ancestor carries its descendants instead of moving both', () => {
+      state.moveMany([node('a'), node('a2x')], { node: node('b'), mode: 'into' });
+
+      expect(ids(state.findById('b')!.children!)).toEqual(['a']);
+      expect(ids(state.nodes())).toEqual(['b', 'a', 'a1', 'a2', 'a2x', 'c']);
+    });
+
+    it('rejects the whole move when any single node is invalid', () => {
+      const listener = vi.fn();
+      state.subscribe(listener);
+
+      // `a` cannot move into its own descendant.
+      expect(state.moveMany([node('c'), node('a')], { node: node('a2'), mode: 'into' })).toBe(
+        false
+      );
+      expect(ids(state.nodes())).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'c']);
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('treats an empty set as valid to drop but nothing to move', () => {
+      const listener = vi.fn();
+      state.subscribe(listener);
+
+      // Vacuous truth is what lets `canDropAt` collapse to one expression that
+      // also covers external drags, which carry no nodes.
+      expect(state.canMoveMany([], { node: node('b'), mode: 'into' })).toBe(true);
+      expect(state.moveMany([], { node: node('b'), mode: 'into' })).toBe(false);
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('canMoveMany requires every node to be valid, without mutating', () => {
+      expect(state.canMoveMany([node('c'), node('a1')], { node: node('b'), mode: 'into' })).toBe(
+        true
+      );
+      expect(state.canMoveMany([node('c'), node('a')], { node: node('a2'), mode: 'into' })).toBe(
+        false
+      );
+      expect(ids(state.nodes())).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'c']);
+    });
+  });
+
   describe('add / remove', () => {
     it('adds a node into a folder and at the root when target is null', () => {
       const added = state.add(

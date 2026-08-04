@@ -37,10 +37,12 @@ describe('tree model', () => {
     };
     const drop: DropEvent<string> = {
       node: null,
+      nodes: [],
       target: { node: target, mode: 'into' },
     };
 
     expect(drop.node).toBeNull();
+    expect(drop.nodes).toEqual([]);
     expect(drop.target?.mode).toBe('into');
   });
 });

@@ -21,8 +21,8 @@ state.setSource([
 const virtualizer = new FixedHeightVirtualizer({ rowHeight: 28 });
 const engine = new DndEngine<MyItem>({
   getVisibleNodes: () => state.visibleNodes(),
-  onDrop: drop => drop.node && drop.target && state.move(drop.node, drop.target),
-  canDropAt: (node, target) => (node ? state.canMove(node, target) : true),
+  onDrop: drop => drop.target && state.moveMany([...drop.nodes], drop.target),
+  canDropAt: (nodes, target) => state.canMoveMany(nodes, target),
 });
 
 state.subscribe(render);

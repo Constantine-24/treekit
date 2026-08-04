@@ -1,27 +1,41 @@
 import type { DropEvent, DropTarget, TreeNode } from '../tree/model';
-import { isDescendant, TreeState } from '../tree/tree-state';
+import type { SelectionModel } from '../selection/selection-model';
+import { isDescendantOfAny, normalizeDragNodes, TreeState } from '../tree/tree-state';
 
 /** Announcement texts for the keyboard DnD mode; override for localization. */
 export interface KeyboardMessages<T> {
-  grabbed: (node: TreeNode<T>) => string;
+  grabbed: (nodes: readonly TreeNode<T>[]) => string;
   moved: (target: DropTarget<T>) => string;
-  dropped: (node: TreeNode<T>, target: DropTarget<T>) => string;
-  cancelled: (node: TreeNode<T>) => string;
+  dropped: (nodes: readonly TreeNode<T>[], target: DropTarget<T>) => string;
+  cancelled: (nodes: readonly TreeNode<T>[]) => string;
+  /** Announced when Space toggles a row or Ctrl/Cmd+A selects everything. */
+  selectionChanged: (count: number) => string;
+}
+
+/** Names a payload for announcements: the node's own name, or a count. */
+function label<T>(nodes: readonly TreeNode<T>[]): string {
+  return nodes.length === 1 ? nodes[0]!.name : `${nodes.length} items`;
 }
 
 function defaultMessages<T>(): KeyboardMessages<T> {
   return {
-    grabbed: node =>
-      `${node.name} grabbed. Use arrow keys to choose a position, Space to drop, Escape to cancel.`,
+    grabbed: nodes =>
+      `${label(nodes)} grabbed. Use arrow keys to choose a position, Space to drop, Escape to cancel.`,
     moved: target =>
       target.mode === 'into'
         ? `Into ${target.node.name}`
         : `${target.mode === 'before' ? 'Before' : 'After'} ${target.node.name}`,
-    dropped: (node, target) =>
+    dropped: (nodes, target) =>
       target.mode === 'into'
-        ? `${node.name} dropped into ${target.node.name}.`
-        : `${node.name} dropped ${target.mode} ${target.node.name}.`,
-    cancelled: node => `Move of ${node.name} cancelled.`,
+        ? `${label(nodes)} dropped into ${target.node.name}.`
+        : `${label(nodes)} dropped ${target.mode} ${target.node.name}.`,
+    cancelled: nodes => `Move of ${label(nodes)} cancelled.`,
+    selectionChanged: count => {
+      if (count === 0) {
+        return 'Selection cleared.';
+      }
+      return count === 1 ? '1 item selected.' : `${count} items selected.`;
+    },
   };
 }
 
@@ -31,8 +45,8 @@ export interface KeyboardControllerOptions<T> {
   state: TreeState<T>;
   /** Receives keyboard drops — the same contract as the pointer `DndEngine`. */
   onDrop: (event: DropEvent<T>) => void;
-  /** Validation hook for drop positions — wire `TreeState.canMove` here. */
-  canDropAt?: (node: TreeNode<T> | null, target: DropTarget<T>) => boolean;
+  /** Validation hook for drop positions — wire `TreeState.canMoveMany` here. */
+  canDropAt?: (nodes: readonly TreeNode<T>[], target: DropTarget<T>) => boolean;
   /** Disables grabbing while it returns `true`. */
   isDisabled?: () => boolean;
   /** Fires when active row, grab state, or drop preview change. */
@@ -41,24 +55,49 @@ export interface KeyboardControllerOptions<T> {
   announce?: (message: string) => void;
   /** Keeps the active/previewed row scrolled into view (visible-list index). */
   scrollToIndex?: (index: number) => void;
+  /**
+   * Selection model driving the multi-select keys. Wiring one changes `Space`
+   * from "grab" to "toggle selection" and moves grabbing to `Ctrl/Cmd+Space`;
+   * omit it and the keyboard behaves exactly as it does single-select.
+   */
+  selection?: SelectionModel<T>;
+  /**
+   * Gates the selection keys at runtime without re-wiring the controller.
+   * Defaults to enabled whenever `selection` is present.
+   */
+  isMultiSelectEnabled?: () => boolean;
   /** Announcement text overrides. */
   messages?: Partial<KeyboardMessages<T>>;
 }
 
 /**
  * Headless keyboard layer: ARIA tree navigation (roving tabindex, arrow keys,
- * Home/End, expand/collapse) plus an accessible drag-and-drop mode. Space
- * grabs the active row, arrows step a drop preview through the same
- * into/before/after positions the pointer engine resolves, Space drops
- * (emitting an identical `DropEvent`), Escape cancels. This is the supported
- * DnD path for touch devices and assistive technology, since native HTML5
- * drag does not fire from touch gestures on all platforms.
+ * Home/End, expand/collapse) plus an accessible drag-and-drop mode. Arrows step
+ * a drop preview through the same into/before/after positions the pointer
+ * engine resolves, and dropping emits an identical `DropEvent`. This is the
+ * supported DnD path for touch devices and assistive technology, since native
+ * HTML5 drag does not fire from touch gestures on all platforms.
+ *
+ * The grab key depends on whether a `selection` is wired:
+ *
+ * | Key             | No selection wired | Selection wired            |
+ * | --------------- | ------------------ | -------------------------- |
+ * | `Space`         | grab               | toggle selection           |
+ * | `Ctrl/Cmd+Space`| grab               | grab                       |
+ * | `Shift+Arrows`  | move active        | extend the selection range |
+ * | `Ctrl/Cmd+A`    | (unhandled)        | select all visible         |
+ *
+ * `Space` had to give way because it is the conventional selection toggle, and
+ * every unambiguous alternative grab chord collides with a browser or OS
+ * shortcut. The only casualty is APG's `Ctrl+Space`, which APG itself describes
+ * as a redundant alias for `Space`.
  */
 export class KeyboardController<T> {
   private readonly _options: KeyboardControllerOptions<T>;
   private readonly _messages: KeyboardMessages<T>;
   private _activeId: string | null = null;
-  private _grabbed: TreeNode<T> | null = null;
+  private _grabbed: TreeNode<T>[] = [];
+  private _grabbedSet = new Set<TreeNode<T>>();
   private _preview: DropTarget<T> | null = null;
 
   constructor(options: KeyboardControllerOptions<T>) {
@@ -80,8 +119,13 @@ export class KeyboardController<T> {
     return visible[0] ?? null;
   }
 
-  /** The node currently grabbed for a keyboard move, or `null`. */
+  /** First node grabbed for a keyboard move, or `null` while idle. */
   grabbedNode(): TreeNode<T> | null {
+    return this._grabbed[0] ?? null;
+  }
+
+  /** Every node grabbed for a keyboard move; empty while idle. */
+  grabbedNodes(): readonly TreeNode<T>[] {
     return this._grabbed;
   }
 
@@ -119,13 +163,13 @@ export class KeyboardController<T> {
 
   /** Processes a keydown; returns whether it was handled (call preventDefault then). */
   handleKeyDown(event: KeyboardEvent): boolean {
-    if (this._grabbed) {
+    if (this._grabbed.length > 0) {
       return this._handleGrabbedKey(event.key);
     }
-    return this._handleNavigationKey(event.key);
+    return this._handleNavigationKey(event);
   }
 
-  private _handleNavigationKey(key: string): boolean {
+  private _handleNavigationKey(event: KeyboardEvent): boolean {
     const state = this._options.state;
     const visible = state.visibleNodes();
     const active = this.activeNode();
@@ -133,19 +177,21 @@ export class KeyboardController<T> {
       return false;
     }
     const index = visible.indexOf(active);
+    const ctrlOrMeta = event.ctrlKey || event.metaKey;
+    const extend = event.shiftKey;
 
-    switch (key) {
+    switch (event.key) {
       case 'ArrowDown':
-        this._moveActive(Math.min(visible.length - 1, index + 1));
+        this._moveActive(Math.min(visible.length - 1, index + 1), extend);
         return true;
       case 'ArrowUp':
-        this._moveActive(Math.max(0, index - 1));
+        this._moveActive(Math.max(0, index - 1), extend);
         return true;
       case 'Home':
-        this._moveActive(0);
+        this._moveActive(0, extend);
         return true;
       case 'End':
-        this._moveActive(visible.length - 1);
+        this._moveActive(visible.length - 1, extend);
         return true;
       case 'ArrowRight':
         if (this._isExpandableFolder(active) && !state.isExpandedNow(active)) {
@@ -164,15 +210,31 @@ export class KeyboardController<T> {
           }
         }
         return true;
+      case 'a':
+      case 'A':
+        if (ctrlOrMeta && this._isMultiSelect()) {
+          this._selectAllVisible();
+          return true;
+        }
+        return false;
       case ' ':
-        return this._grab(active);
+        // With a selection wired, Space toggles and Ctrl/Cmd+Space grabs. Every
+        // unambiguous alternative chord collides with a browser or OS shortcut
+        // (Cmd+M, Ctrl+M, Ctrl+Shift+M, Alt+Space), and the only casualty is
+        // APG's Ctrl+Space, which APG itself calls a redundant alias for Space.
+        // With no selection wired, Space still grabs exactly as it always did.
+        if (this._isMultiSelect() && !ctrlOrMeta) {
+          this._toggleSelection(active);
+          return true;
+        }
+        return this._grab();
       default:
         return false;
     }
   }
 
   private _handleGrabbedKey(key: string): boolean {
-    const grabbed = this._grabbed!;
+    const grabbed = this._grabbed;
     switch (key) {
       case 'ArrowDown':
         this._movePreview(1);
@@ -188,16 +250,19 @@ export class KeyboardController<T> {
         return true;
       case ' ':
         if (this._preview) {
-          this._options.onDrop({ node: grabbed, target: this._preview, dataTransfer: null });
+          this._options.onDrop({
+            node: grabbed[0] ?? null,
+            nodes: grabbed,
+            target: this._preview,
+            dataTransfer: null,
+          });
           this._options.announce?.(this._messages.dropped(grabbed, this._preview));
         }
-        this._grabbed = null;
-        this._preview = null;
+        this._clearGrab();
         this._notify();
         return true;
       case 'Escape':
-        this._grabbed = null;
-        this._preview = null;
+        this._clearGrab();
         this._options.announce?.(this._messages.cancelled(grabbed));
         this._notify();
         return true;
@@ -208,15 +273,58 @@ export class KeyboardController<T> {
 
   // MARK: - Grab mode
 
-  private _grab(node: TreeNode<T>): boolean {
-    if (this._options.isDisabled?.() || node.canDrag === false) {
+  private _grab(): boolean {
+    const active = this.activeNode();
+    if (!active || this._options.isDisabled?.() || active.canDrag === false) {
       return false;
     }
-    this._grabbed = node;
-    this._preview = this._initialPreview(node);
-    this._options.announce?.(this._messages.grabbed(node));
+    // The `canDrag` guard above is deliberate: grabbing from a locked row must
+    // not quietly grab the rest of the selection instead, which would diverge
+    // from the pointer engine (it cancels `dragstart` on a locked row).
+    const selected = this._isMultiSelect() ? (this._options.selection?.selectedNodes() ?? []) : [];
+    const base = selected.includes(active) ? selected : [active];
+    const nodes = normalizeDragNodes(base, this._options.state.visibleNodes());
+    if (nodes.length === 0) {
+      return false;
+    }
+    this._grabbed = nodes;
+    this._grabbedSet = new Set(nodes);
+    this._preview = this._initialPreview();
+    this._options.announce?.(this._messages.grabbed(nodes));
     this._notify();
     return true;
+  }
+
+  /** Whether the selection keys are active — a model is wired and not gated off. */
+  private _isMultiSelect(): boolean {
+    return !!this._options.selection && this._options.isMultiSelectEnabled?.() !== false;
+  }
+
+  private _toggleSelection(node: TreeNode<T>): void {
+    const selection = this._options.selection!;
+    if (selection.toggle(node)) {
+      this._options.announce?.(this._messages.selectionChanged(selection.size()));
+    }
+    this._notify();
+  }
+
+  private _selectAllVisible(): void {
+    const selection = this._options.selection!;
+    if (selection.selectAllVisible()) {
+      this._options.announce?.(this._messages.selectionChanged(selection.size()));
+    }
+    this._notify();
+  }
+
+  private _clearGrab(): void {
+    this._grabbed = [];
+    this._grabbedSet.clear();
+    this._preview = null;
+  }
+
+  /** Whether a row can never host a drop preview for the current grab. */
+  private _isExcluded(node: TreeNode<T>): boolean {
+    return this._grabbedSet.has(node) || isDescendantOfAny(node, this._grabbedSet);
   }
 
   /**
@@ -227,15 +335,12 @@ export class KeyboardController<T> {
    * grabbed subtree and positions rejected by `canDropAt` are excluded.
    */
   private _candidates(): DropTarget<T>[] {
-    const grabbed = this._grabbed;
     const state = this._options.state;
-    const visible = state
-      .visibleNodes()
-      .filter(node => !grabbed || (node !== grabbed && !isDescendant(node, grabbed)));
+    const visible = state.visibleNodes().filter(node => !this._isExcluded(node));
 
     const positions: DropTarget<T>[] = [];
     const push = (target: DropTarget<T>): void => {
-      if (this._options.canDropAt?.(grabbed, target) !== false) {
+      if (this._options.canDropAt?.(this._grabbed, target) !== false) {
         positions.push(target);
       }
     };
@@ -255,15 +360,19 @@ export class KeyboardController<T> {
     return positions;
   }
 
-  /** Starts the preview at the grabbed node's current location. */
-  private _initialPreview(grabbed: TreeNode<T>): DropTarget<T> | null {
+  /** Starts the preview at the grabbed payload's current location. */
+  private _initialPreview(): DropTarget<T> | null {
     const candidates = this._candidates();
     const visible = this._options.state.visibleNodes();
-    const grabbedIndex = visible.indexOf(grabbed);
+    const first = this._grabbed[0];
+    if (!first) {
+      return candidates[0] ?? null;
+    }
+    const grabbedIndex = visible.indexOf(first);
     let previous: TreeNode<T> | null = null;
     for (let index = grabbedIndex - 1; index >= 0; index--) {
       const node = visible[index]!;
-      if (node !== grabbed && !isDescendant(node, grabbed)) {
+      if (!this._isExcluded(node)) {
         previous = node;
         break;
       }
@@ -307,15 +416,32 @@ export class KeyboardController<T> {
 
   // MARK: - Helpers
 
-  private _moveActive(index: number): void {
+  /**
+   * Moves the active row, optionally extending the selection range to it.
+   *
+   * Selection never follows focus on its own: arrowing through a 10k-row tree
+   * would otherwise emit a selection change per row. Only Shift extends.
+   */
+  private _moveActive(index: number, extendSelection = false): void {
     const visible = this._options.state.visibleNodes();
     const node = visible[index];
     if (!node) {
       return;
     }
-    if (this._activeId !== node.id) {
+    const moved = this._activeId !== node.id;
+    if (moved) {
       this._activeId = node.id;
       this._options.scrollToIndex?.(index);
+    }
+    let selectionChanged = false;
+    if (extendSelection && this._isMultiSelect()) {
+      const selection = this._options.selection!;
+      selectionChanged = selection.selectRangeTo(node);
+      if (selectionChanged) {
+        this._options.announce?.(this._messages.selectionChanged(selection.size()));
+      }
+    }
+    if (moved || selectionChanged) {
       this._notify();
     }
   }

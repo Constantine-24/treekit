@@ -68,12 +68,26 @@ export interface DropTarget<T> {
  * Payload emitted when a drag is dropped over the tree — by pointer or by the
  * keyboard DnD mode.
  *
- * `node` is the dragged tree node for an in-tree move, or `null` for an
- * external drop (the consumer resolves its own payload, e.g. from
- * `dataTransfer`). `target` is `null` when released over empty space.
+ * `target` is `null` when the drag is released over empty space.
  */
 export interface DropEvent<T> {
+  /**
+   * The primary dragged node: the first of `nodes`, or `null` for an external
+   * drop (where the consumer resolves its own payload, e.g. from
+   * `dataTransfer`).
+   *
+   * Defined as *first in document order* rather than "the row the drag started
+   * from", which is what keeps `node` a member of `nodes`: the origin row can
+   * be de-nested away when an ancestor is dragged too, and a `node` outside
+   * `nodes` would be a trap.
+   */
   node: TreeNode<T> | null;
+  /**
+   * Every dragged node, normalized: document order, de-duplicated, de-nested
+   * (no node whose ancestor is also present), and draggable. Empty for an
+   * external drop.
+   */
+  nodes: readonly TreeNode<T>[];
   target: DropTarget<T> | null;
   /** The native transfer for external payloads; absent for keyboard drops. */
   dataTransfer?: DataTransfer | null;

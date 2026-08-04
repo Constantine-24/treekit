@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   DropEvent,
@@ -11,6 +11,7 @@ import {
 
 import { TkTree } from './tree';
 import { TkTreeNodeDef } from './tree-node-def';
+import { TkTreeEmptyDef, TkTreeLoadingDef } from './tree-placeholders';
 
 const ROW_HEIGHT = 30;
 
@@ -99,6 +100,28 @@ class HostComponent {
   }
 }
 
+/** Stub that measures, exercising the variable-height path. */
+class MeasuringStubVirtualizer extends StubVirtualizer {
+  readonly measured: { index: number; className: string }[] = [];
+
+  measure(element: HTMLElement, index: number): void {
+    this.measured.push({ index, className: element.className });
+  }
+}
+
+@Component({
+  template: `<tk-tree [state]="state" [virtualizer]="virtualizer" />`,
+  imports: [TkTree],
+})
+class MeasuringHostComponent {
+  state = new TreeState<string>();
+  virtualizer = new MeasuringStubVirtualizer();
+
+  constructor() {
+    this.state.setSource(fixtureSource());
+  }
+}
+
 describe('TkTree', () => {
   let fixture: ComponentFixture<HostComponent>;
   let host: HostComponent;
@@ -133,6 +156,49 @@ describe('TkTree', () => {
     fixture = TestBed.createComponent(HostComponent);
     host = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  /**
+   * Guards the whole "engines attach, but the view never refreshes" failure
+   * class: every other spec calls `detectChanges()` before asserting, so they
+   * pass whether or not attaching actually notifies the scheduler. This one
+   * renders on scheduling alone.
+   */
+  it('renders rows on first paint without a manual change-detection pass', async () => {
+    const fresh = TestBed.createComponent(HostComponent);
+    await fresh.whenStable();
+
+    const element = fresh.nativeElement as HTMLElement;
+    const rows = Array.from(element.querySelectorAll<HTMLElement>('.tk-node')).map((node) =>
+      node.textContent!.trim(),
+    );
+
+    expect(rows).toEqual(['Alpha', 'Beta', 'Gamma']);
+    expect(element.querySelector<HTMLElement>('.tk-content')!.style.height).toBe(
+      `${3 * ROW_HEIGHT}px`,
+    );
+  });
+
+  it('pins row height when the virtualizer does not measure', () => {
+    const row = root().querySelector<HTMLElement>('.tk-row')!;
+
+    expect(row.style.height).toBe(`${ROW_HEIGHT}px`);
+    expect(row.style.minHeight).toBe('');
+  });
+
+  it('reports rendered rows to a measuring virtualizer and leaves their height free', async () => {
+    const measuring = TestBed.createComponent(MeasuringHostComponent);
+    await measuring.whenStable();
+
+    const { measured } = measuring.componentInstance.virtualizer;
+    expect(measured.map((entry) => entry.index)).toEqual([0, 1, 2]);
+    expect(measured.every((entry) => entry.className.includes('tk-row'))).toBe(true);
+
+    // A measured row must not carry a pinned height, or the estimate would be
+    // fed straight back as the measurement.
+    const row = (measuring.nativeElement as HTMLElement).querySelector<HTMLElement>('.tk-row')!;
+    expect(row.style.height).toBe('');
+    expect(row.style.minHeight).toBe(`${ROW_HEIGHT}px`);
   });
 
   it('renders the visible rows with default name templates', () => {
@@ -211,5 +277,242 @@ describe('TkTree', () => {
     fixture.detectChanges();
     expect(nodeElement('b').classList.contains('selected')).toBe(true);
     expect(nodeElement('b').getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+@Component({
+  template: `
+    <tk-tree
+      [state]="state"
+      [virtualizer]="virtualizer"
+      [multiSelect]="multiSelect()"
+      [selectedIds]="selectedIds()"
+      (selectedIdsChange)="emitted.push($event)"
+    />
+  `,
+  imports: [TkTree],
+})
+class MultiSelectHostComponent {
+  state = new TreeState<string>();
+  virtualizer = new StubVirtualizer();
+  multiSelect = signal(true);
+  selectedIds = signal<readonly string[] | null>(null);
+  emitted: (readonly string[])[] = [];
+
+  constructor() {
+    this.state.setSource(fixtureSource());
+  }
+}
+
+describe('TkTree multi-select', () => {
+  let fixture: ComponentFixture<MultiSelectHostComponent>;
+  let host: MultiSelectHostComponent;
+
+  function element(): HTMLElement {
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  /** `HTMLElement.click()` cannot carry modifiers, so dispatch explicitly. */
+  function clickNode(id: string, init: MouseEventInit = {}): void {
+    element()
+      .querySelector<HTMLElement>(`[data-node-id="${id}"]`)!
+      .dispatchEvent(new MouseEvent('click', { bubbles: true, ...init }));
+    fixture.detectChanges();
+  }
+
+  function selectedIds(): string[] {
+    return Array.from(element().querySelectorAll<HTMLElement>('.tk-node.selected')).map((node) =>
+      node.getAttribute('data-node-id')!,
+    );
+  }
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MultiSelectHostComponent],
+    }).compileComponents();
+    fixture = TestBed.createComponent(MultiSelectHostComponent);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('marks the tree as multi-selectable only when enabled', () => {
+    expect(element().querySelector('.tk-viewport')!.getAttribute('aria-multiselectable')).toBe(
+      'true',
+    );
+
+    host.multiSelect.set(false);
+    fixture.detectChanges();
+
+    expect(
+      element().querySelector('.tk-viewport')!.getAttribute('aria-multiselectable'),
+    ).toBeNull();
+  });
+
+  it('replaces the selection on a plain click', () => {
+    clickNode('a');
+    clickNode('c');
+
+    expect(selectedIds()).toEqual(['c']);
+  });
+
+  it('adds a row on ctrl-click and emits the new id set', () => {
+    clickNode('a');
+    clickNode('c', { ctrlKey: true });
+
+    expect(selectedIds()).toEqual(['a', 'c']);
+    expect(host.emitted.at(-1)).toEqual(['a', 'c']);
+  });
+
+  it('treats meta-click the same as ctrl-click', () => {
+    clickNode('a');
+    clickNode('c', { metaKey: true });
+
+    expect(selectedIds()).toEqual(['a', 'c']);
+  });
+
+  it('selects a range on shift-click', () => {
+    clickNode('a');
+    clickNode('c', { shiftKey: true });
+
+    expect(selectedIds()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('reflects the selection in aria-selected', () => {
+    clickNode('b');
+
+    expect(
+      element().querySelector<HTMLElement>('[data-node-id="b"]')!.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(
+      element().querySelector<HTMLElement>('[data-node-id="a"]')!.getAttribute('aria-selected'),
+    ).toBe('false');
+  });
+
+  it('accepts a controlled selectedIds binding', () => {
+    host.selectedIds.set(['a', 'c']);
+    fixture.detectChanges();
+
+    expect(selectedIds()).toEqual(['a', 'c']);
+  });
+
+  it('does not move the highlight on click when multi-select is off', () => {
+    host.multiSelect.set(false);
+    host.selectedIds.set(['b']);
+    fixture.detectChanges();
+    expect(selectedIds()).toEqual(['b']);
+
+    clickNode('a');
+
+    // Fully controlled: the consumer owns the highlight.
+    expect(selectedIds()).toEqual(['b']);
+  });
+});
+
+@Component({
+  template: `
+    <tk-tree
+      [state]="state"
+      [virtualizer]="virtualizer"
+      [isLoading]="isLoading()"
+      [indentGuides]="indentGuides()"
+      (expanded)="expandedIds.push($event.id)"
+      (collapsed)="collapsedIds.push($event.id)"
+    >
+      <ng-template tkTreeEmpty><p class="empty-slot">Nothing here yet</p></ng-template>
+      <ng-template tkTreeLoading><p class="loading-slot">Loading…</p></ng-template>
+    </tk-tree>
+  `,
+  imports: [TkTree, TkTreeEmptyDef, TkTreeLoadingDef],
+})
+class PlaceholderHostComponent {
+  readonly tree = viewChild.required(TkTree);
+  state = new TreeState<string>();
+  virtualizer = new StubVirtualizer();
+  isLoading = signal(false);
+  indentGuides = signal(false);
+  expandedIds: string[] = [];
+  collapsedIds: string[] = [];
+
+  constructor() {
+    this.state.setSource(fixtureSource());
+  }
+}
+
+describe('TkTree placeholders and imperative API', () => {
+  let fixture: ComponentFixture<PlaceholderHostComponent>;
+  let host: PlaceholderHostComponent;
+
+  function element(): HTMLElement {
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PlaceholderHostComponent],
+    }).compileComponents();
+    fixture = TestBed.createComponent(PlaceholderHostComponent);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('shows no placeholder while rows exist', () => {
+    expect(element().querySelector('.empty-slot')).toBeNull();
+    expect(element().querySelector('.loading-slot')).toBeNull();
+  });
+
+  it('shows the empty template once nothing is visible', () => {
+    host.state.setFilter(() => false);
+    fixture.detectChanges();
+
+    expect(element().querySelector('.empty-slot')).not.toBeNull();
+    expect(element().querySelectorAll('.tk-node')).toHaveLength(0);
+  });
+
+  it('gives the loading template precedence over the empty one', () => {
+    host.state.setFilter(() => false);
+    host.isLoading.set(true);
+    fixture.detectChanges();
+
+    expect(element().querySelector('.loading-slot')).not.toBeNull();
+    expect(element().querySelector('.empty-slot')).toBeNull();
+  });
+
+  it('emits expanded and collapsed from the toggle button', () => {
+    const toggle = element().querySelector<HTMLButtonElement>('[data-node-id="a"] .tk-toggle')!;
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(host.expandedIds).toEqual(['a']);
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(host.collapsedIds).toEqual(['a']);
+  });
+
+  it('expands and collapses everything through the imperative API', () => {
+    host.tree().expandAll();
+    fixture.detectChanges();
+    expect(element().querySelectorAll('.tk-node')).toHaveLength(4);
+
+    host.tree().collapseAll();
+    fixture.detectChanges();
+    expect(element().querySelectorAll('.tk-node')).toHaveLength(3);
+  });
+
+  it('scrolls to a visible node and reports a hidden one as not found', () => {
+    expect(host.tree().scrollToNode('c')).toBe(true);
+    expect(host.virtualizer.scrolledTo.at(-1)).toBe(2);
+
+    // `a1` is inside a collapsed folder, so there is no row to scroll to.
+    expect(host.tree().scrollToNode('a1')).toBe(false);
+  });
+
+  it('adds the indent-guide class only when enabled', () => {
+    expect(element().querySelector('.tk-node.tk-guides')).toBeNull();
+
+    host.indentGuides.set(true);
+    fixture.detectChanges();
+
+    expect(element().querySelector('.tk-node.tk-guides')).not.toBeNull();
   });
 });

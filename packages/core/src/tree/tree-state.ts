@@ -23,6 +23,75 @@ export function isDescendant<T>(node: TreeNode<T>, ancestor: TreeNode<T>): boole
 }
 
 /**
+ * Returns whether `node` is inside the subtree of any node in `ancestors`
+ * (exclusive).
+ *
+ * Walks the parent chain rather than pre-expanding the ancestors' subtrees:
+ * this runs once per `dragover` against a selection whose subtrees may hold
+ * thousands of nodes, so O(depth) per call beats an O(subtree) precompute.
+ */
+export function isDescendantOfAny<T>(
+  node: TreeNode<T>,
+  ancestors: ReadonlySet<TreeNode<T>>
+): boolean {
+  let current = node.parent;
+  while (current) {
+    if (ancestors.has(current)) {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+/**
+ * Orders `nodes` by `order`, dedupes them, and drops any node whose ancestor is
+ * also present.
+ *
+ * Moving a node and one of its own ancestors independently is incoherent —
+ * relocating the ancestor already carries the descendant along — so the
+ * descendant is redundant. Consumers acting on a whole selection (a bulk
+ * delete, say) want the same treatment, which is why this is exported.
+ */
+export function denestNodes<T>(
+  nodes: Iterable<TreeNode<T>>,
+  order: readonly TreeNode<T>[]
+): TreeNode<T>[] {
+  const set = new Set(nodes);
+  const result: TreeNode<T>[] = [];
+  for (const node of order) {
+    if (set.has(node) && !isDescendantOfAny(node, set)) {
+      result.push(node);
+    }
+  }
+  return result;
+}
+
+/**
+ * `denestNodes` restricted to draggable nodes — the drag payload.
+ *
+ * The `canDrag` filter runs *before* de-nesting, and the order matters: given a
+ * locked folder and its draggable child, filtering first correctly yields the
+ * child, while de-nesting first would discard the child (its ancestor is in the
+ * set) and then discard the locked folder too, yielding nothing.
+ *
+ * Kept separate from `denestNodes` because `canDrag` is a drag-layer concern
+ * that `TreeState`'s own moves have never consulted.
+ */
+export function normalizeDragNodes<T>(
+  nodes: Iterable<TreeNode<T>>,
+  order: readonly TreeNode<T>[]
+): TreeNode<T>[] {
+  const draggable: TreeNode<T>[] = [];
+  for (const node of nodes) {
+    if (node.canDrag !== false) {
+      draggable.push(node);
+    }
+  }
+  return denestNodes(draggable, order);
+}
+
+/**
  * Headless tree state: owns the forest, its flat depth-first projection, the
  * expansion/filter-driven visible list, and all structural mutations.
  *
@@ -213,11 +282,63 @@ export class TreeState<T> {
 
   /** Moves a node (with its subtree) to the target. Returns whether it happened. */
   move(node: TreeNode<T>, target: DropTarget<T>): boolean {
-    if (!this.canMove(node, target)) {
+    return this.moveMany([node], target);
+  }
+
+  /**
+   * Whether every node could move to `target`. Never mutates.
+   *
+   * Vacuously `true` for an empty set — that is what lets a drop-validation
+   * hook be a single expression that also covers external drags, which carry
+   * no nodes at all.
+   */
+  canMoveMany(nodes: readonly TreeNode<T>[], target: DropTarget<T>): boolean {
+    return nodes.every(node => this.canMove(node, target));
+  }
+
+  /**
+   * Moves several nodes (each with its subtree) to the target, preserving their
+   * relative order. All-or-nothing: one invalid node rejects the whole move, so
+   * consumers never have to reconcile a partial result.
+   */
+  moveMany(nodes: readonly TreeNode<T>[], target: DropTarget<T>): boolean {
+    const ordered = denestNodes(nodes, this._flat);
+    if (ordered.length === 0 || !this.canMoveMany(ordered, target)) {
       return false;
     }
-    this._detach(node);
-    this._insert(node, target);
+
+    // Detach everything first. A dragged node sitting before the reference in
+    // the same sibling list shifts that reference's index, so the destination
+    // can only be resolved once every removal is done.
+    for (const node of ordered) {
+      this._detach(node);
+    }
+
+    let parent: TreeNode<T> | null;
+    let siblings: TreeNode<T>[];
+    let index: number;
+    if (target.mode === 'into') {
+      parent = target.node;
+      siblings = parent.children ??= [];
+      index = siblings.length;
+    } else {
+      parent = target.node.parent;
+      siblings = parent ? (parent.children ??= []) : this._roots;
+      const referenceIndex = siblings.indexOf(target.node);
+      if (referenceIndex < 0) {
+        return false;
+      }
+      index = target.mode === 'before' ? referenceIndex : referenceIndex + 1;
+    }
+
+    // A single splice keeps the relative order for every mode. Looping
+    // `_insert` would re-resolve the reference each time, which happens to work
+    // for `before` but reverses the nodes for `after`.
+    siblings.splice(index, 0, ...ordered);
+    for (const node of ordered) {
+      node.parent = parent;
+    }
+
     this._recompute();
     this._notify();
     return true;

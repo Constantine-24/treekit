@@ -29,17 +29,21 @@
   display: flex;
   align-items: center;
   gap: var(--tk-node-gap, 0.25rem);
-  height: 100%;
+  // `min-height` rather than `height` so a measured (variable-height) row can
+  // grow to its content. Against a fixed-height row this resolves identically.
+  min-height: 100%;
+  // Shift-clicking rows would otherwise drag a text selection across them.
+  user-select: none;
   padding-right: var(--tk-node-padding-inline, 0.5rem);
   border-radius: var(--tk-node-radius, 4px);
   color: var(--tk-text-color, inherit);
 
   &:hover {
-    background: var(--tk-hover-bg, rgba(127, 127, 127, 0.08));
+    background-color: var(--tk-hover-bg, rgba(127, 127, 127, 0.08));
   }
 
   &.selected {
-    background: var(--tk-selected-bg, rgba(59, 130, 246, 0.12));
+    background-color: var(--tk-selected-bg, rgba(59, 130, 246, 0.12));
   }
 
   &.active {
@@ -48,7 +52,7 @@
   }
 
   &.folder-hovered {
-    background: var(--tk-drop-bg, rgba(59, 130, 246, 0.2));
+    background-color: var(--tk-drop-bg, rgba(59, 130, 246, 0.2));
     outline: 1px dashed var(--tk-focus-color, #3b82f6);
     outline-offset: -1px;
   }
@@ -56,6 +60,29 @@
   &.draggable {
     cursor: grab;
   }
+
+  // Indent guides: one hairline per level, painted only across the indentation
+  // (`background-size` stops the repeat at the row's own depth). This is why
+  // the state backgrounds above use `background-color` rather than the
+  // shorthand, which would reset this image.
+  &.tk-guides {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--tk-indent-guide-color, rgba(127, 127, 127, 0.25)) 0 1px,
+      transparent 1px var(--tk-indent-width, 18px)
+    );
+    background-repeat: no-repeat;
+    background-size: var(--tk-guide-width, 0) 100%;
+  }
+}
+
+.tk-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tk-placeholder-padding, 2rem 1rem);
+  color: var(--tk-text-muted-color, inherit);
+  text-align: center;
 }
 
 .tk-toggle {
@@ -81,7 +108,7 @@
   }
 
   &:hover {
-    background: var(--tk-hover-bg, rgba(127, 127, 127, 0.12));
+    background-color: var(--tk-hover-bg, rgba(127, 127, 127, 0.12));
   }
 }
 

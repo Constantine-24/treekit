@@ -4,6 +4,7 @@
   role="tree"
   tabindex="0"
   [attr.aria-label]="ariaLabel()"
+  [attr.aria-multiselectable]="multiSelect() ? true : null"
   [attr.aria-activedescendant]="activeDescendant()"
   (keydown)="onKeydown($event)"
 >
@@ -12,7 +13,10 @@
       <div
         class="tk-row"
         [style.transform]="'translateY(' + row.start + 'px)'"
-        [style.height.px]="row.size"
+        [style.height.px]="measuringVirtualizer() ? null : row.size"
+        [style.minHeight.px]="measuringVirtualizer() ? row.size : null"
+        [tkTreeRowMeasure]="measuringVirtualizer()"
+        [tkTreeRowMeasureIndex]="row.index"
       >
         <div
           class="tk-node"
@@ -20,15 +24,17 @@
           [id]="'tk-node-' + row.node.id"
           [attr.aria-level]="row.node.level + 1"
           [attr.aria-expanded]="row.ariaExpanded"
-          [attr.aria-selected]="row.node.id === selectedId()"
+          [attr.aria-selected]="row.selected"
           [attr.data-node-id]="row.node.id"
-          [class.selected]="row.node.id === selectedId()"
+          [class.selected]="row.selected"
           [class.folder-hovered]="row.node === hoveredFolder()"
           [class.active]="'tk-node-' + row.node.id === activeDescendant()"
           [class.draggable]="row.canDrag"
+          [class.tk-guides]="indentGuides()"
+          [style.--tk-guide-width]="row.node.level * indentWidth() + 'px'"
           [style.padding-left.px]="row.node.level * indentWidth()"
           [draggable]="row.canDrag"
-          (click)="onRowClick(row.node)"
+          (click)="onRowClick(row.node, $event)"
           (dblclick)="nodeDblClick.emit(row.node)"
           (contextmenu)="onContextMenu($event, row.node)"
         >
@@ -76,6 +82,19 @@
       <div class="tk-insertion-line" [style.top.px]="line.top" [style.left.px]="line.left"></div>
     }
   </div>
+  @if (isLoading()) {
+    @if (loadingDef(); as def) {
+      <div class="tk-placeholder">
+        <ng-container *ngTemplateOutlet="def.template" />
+      </div>
+    }
+  } @else if (visibleNodes().length === 0) {
+    @if (emptyDef(); as def) {
+      <div class="tk-placeholder">
+        <ng-container *ngTemplateOutlet="def.template" />
+      </div>
+    }
+  }
 </div>
 <div class="tk-live-region" aria-live="assertive" aria-atomic="true">
   {{ announcement() }}
