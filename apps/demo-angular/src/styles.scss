@@ -1,1 +1,89 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * treekit demo — "instrument panel"
+ *
+ * The page is styled as measurement equipment: a cool paper ground, hairline
+ * rules, monospace for every number, and exactly one saturated accent. Amber is
+ * reserved for a single meaning — an `into` drop — so it never competes with
+ * the indigo signal colour.
+ */
+
+:root {
+  color-scheme: light;
+
+  --ink: #101418;
+  --ink-muted: #6b7684;
+  --ground: #f2f4f6;
+  --panel: #ffffff;
+  --rule: #dde2e7;
+  --rule-strong: #c3ccd6;
+  --signal: #2f4fe0;
+  --signal-wash: rgba(47, 79, 224, 0.09);
+  --into: #e8590c;
+  --into-wash: rgba(232, 89, 12, 0.12);
+
+  --display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --rail: 15rem;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ink: #e7ecf2;
+  --ink-muted: #8b96a5;
+  --ground: #14181d;
+  --panel: #1b2027;
+  --rule: #2a313a;
+  --rule-strong: #3c4551;
+  --signal: #7d97ff;
+  --signal-wash: rgba(125, 151, 255, 0.14);
+  --into: #ff9247;
+  --into-wash: rgba(255, 146, 71, 0.16);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Equipment labelling: small, uppercase, widely tracked. */
+.label {
+  font-family: var(--display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+:where(button, input, select):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

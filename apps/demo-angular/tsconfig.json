@@ -13,8 +13,18 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve",
+    /*
+     * Source-linked, not dist-linked. Pointing these at build output means the
+     * dev server neither watches nor rebuilds them, so every library edit is
+     * silently stale in the demo until you rebuild and restart — which is how
+     * the "tree renders blank" bug hid for so long. Packaging is still verified
+     * by `pnpm build` in CI, and demo-vanilla still consumes @treekit/core
+     * through its published `exports` map.
+     */
     "paths": {
-      "@treekit/angular": ["../../packages/angular/dist/treekit"]
+      "@treekit/angular": ["../../packages/angular/projects/treekit/src/public-api.ts"],
+      "@treekit/core": ["../../packages/core/src/index.ts"],
+      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"]
     }
   },
   "angularCompilerOptions": {

@@ -1,55 +1,163 @@
-<header>
-  <h1>treekit / Angular</h1>
-  <div class="toolbar">
-    <input
-      type="search"
-      placeholder="Filter…"
-      aria-label="Filter tree"
-      #filter
-      (input)="onFilter(filter.value)"
-    />
-    <button type="button" (click)="state.expandAll()">Expand all</button>
-    <button type="button" (click)="state.collapseAll()">Collapse all</button>
-    <label>
-      <input type="checkbox" [checked]="useTanStack()" (change)="useTanStack.set(!useTanStack())" />
-      TanStack virtualizer
-    </label>
-    <label>
-      <input type="checkbox" [checked]="isReadonly()" (change)="isReadonly.set(!isReadonly())" />
-      Readonly
-    </label>
+<header class="masthead">
+  <div class="mark">
+    <span class="wordmark">treekit</span>
+    <span class="rule-h"></span>
+    <span class="label">headless · virtualized · native HTML5 drag</span>
   </div>
-  @if (lastDrop(); as message) {
-    <p class="status" role="status">{{ message }}</p>
-  }
+  <button type="button" class="ghost" (click)="toggleTheme()">
+    {{ isDark() ? 'Light' : 'Dark' }}
+  </button>
 </header>
-<main>
-  <aside aria-label="Palette">
-    <h2>Palette</h2>
-    <p class="hint">Drag a chip onto the tree, or use Space + arrows on a row.</p>
-    <ul>
-      @for (label of paletteLabels; track label) {
-        <li class="chip" draggable="true" (dragstart)="onPaletteDragStart($event, label)">
-          {{ label }}
-        </li>
-      }
-    </ul>
+
+<main class="deck">
+  <aside class="rail">
+    <section class="gauges">
+      <div class="gauge">
+        <span class="label">Nodes</span>
+        <span class="value">{{ totalNodes() }}</span>
+      </div>
+      <div class="gauge">
+        <span class="label">Visible</span>
+        <span class="value">{{ visibleCount() }}</span>
+      </div>
+      <div class="gauge accent">
+        <span class="label">In the DOM</span>
+        <span class="value">{{ renderedCount() }}</span>
+      </div>
+      <div class="gauge">
+        <span class="label">Selected</span>
+        <span class="value">{{ selectionCount() }}</span>
+      </div>
+    </section>
+
+    <section class="palette">
+      <h2 class="label">Palette</h2>
+      <p class="hint">Drag a chip onto a row, or press Space on a row to grab it.</p>
+      <ul>
+        @for (chip of paletteLabels; track chip) {
+          <li
+            class="chip"
+            draggable="true"
+            (dragstart)="onPaletteDragStart($event, chip)"
+            (dragend)="clearProbe()"
+          >
+            {{ chip }}
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="keys">
+      <h2 class="label">Keys</h2>
+      <dl>
+        <dt>Space</dt>
+        <dd>toggle selection</dd>
+        <dt>⌃/⌘ Space</dt>
+        <dd>grab &amp; move</dd>
+        <dt>⇧ ↑↓</dt>
+        <dd>extend range</dd>
+        <dt>⌃/⌘ A</dt>
+        <dd>select all</dd>
+      </dl>
+    </section>
   </aside>
-  <tk-tree
-    [state]="state"
-    [virtualizer]="virtualizer()"
-    [rowHeight]="rowHeight"
-    [isReadonly]="isReadonly()"
-    [selectedId]="selectedId()"
-    ariaLabel="Sensor hierarchy"
-    (dropped)="onDrop($event)"
-    (nodeClick)="onNodeClick($event)"
-  >
-    <ng-template tkTreeNodeDef let-node>
-      <span class="node-name">{{ node.name }}</span>
-      @if (node.item.unit) {
-        <span class="unit-chip">{{ node.item.unit }}</span>
+
+  <section class="instrument">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="filter"
+        placeholder="Filter rows…"
+        aria-label="Filter rows"
+        (input)="onFilter($any($event.target).value)"
+      />
+      <button type="button" class="ghost" (click)="expandAll()">Expand all</button>
+      <button type="button" class="ghost" (click)="collapseAll()">Collapse all</button>
+      <span class="spacer"></span>
+      <label class="switch">
+        <input
+          type="checkbox"
+          [checked]="indentGuides()"
+          (change)="indentGuides.set(!indentGuides())"
+        />
+        <span>Guides</span>
+      </label>
+      <label class="switch">
+        <input
+          type="checkbox"
+          [checked]="useTanStack()"
+          (change)="useTanStack.set(!useTanStack())"
+        />
+        <span>Measured rows</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" [checked]="isReadonly()" (change)="isReadonly.set(!isReadonly())" />
+        <span>Read only</span>
+      </label>
+    </div>
+
+    <div
+      class="screen"
+      (dragover)="onProbe($event)"
+      (dragleave)="clearProbe()"
+      (drop)="clearProbe()"
+    >
+      <tk-tree
+        [state]="state"
+        [virtualizer]="virtualizer()"
+        [rowHeight]="rowHeight"
+        [isReadonly]="isReadonly()"
+        [multiSelect]="true"
+        [indentGuides]="indentGuides()"
+        [springLoadDelay]="600"
+        ariaLabel="Sensor hierarchy"
+        (dropped)="onDrop($event)"
+        (nodeClick)="onNodeClick($event)"
+        (selectionChange)="selectionCount.set($event.length)"
+      >
+        <ng-template tkTreeNodeDef let-node>
+          <span class="row-name">{{ node.name }}</span>
+          @if (node.item.unit) {
+            <span class="row-unit">{{ node.item.unit }}</span>
+          }
+        </ng-template>
+        <ng-template tkTreeEmpty>
+          <span class="label">No rows match that filter</span>
+        </ng-template>
+      </tk-tree>
+    </div>
+
+    <footer class="statusbar" [class.live]="probe()" [class.into]="probe()?.mode === 'into'">
+      @if (probe(); as reading) {
+        <span class="label">Drop</span>
+        <span class="cell"><i>row</i>{{ reading.name }}</span>
+        <span class="cell"><i>folder</i>{{ reading.isFolder }}</span>
+        <span class="cell"><i>fraction</i>{{ format(reading.fraction) }}</span>
+        <span class="cell intent"><i>intent</i>{{ reading.mode }}</span>
+        <code>resolveDropIntent({{ reading.isFolder }}, {{ format(reading.fraction) }})</code>
+      } @else {
+        <span class="label">Status</span>
+        <span class="status">{{ status() || 'Ready' }}</span>
       }
-    </ng-template>
-  </tk-tree>
+    </footer>
+  </section>
 </main>
+
+@if (probe(); as reading) {
+  <div
+    class="calipers"
+    [class.into]="reading.mode === 'into'"
+    [style.top.px]="reading.top"
+    [style.left.px]="reading.left"
+    [style.width.px]="reading.width"
+    [style.height.px]="reading.height"
+  >
+    @if (reading.isFolder) {
+      <span class="band"></span>
+    }
+    <span class="tick" style="top: 25%"></span>
+    <span class="tick mid" style="top: 50%"></span>
+    <span class="tick" style="top: 75%"></span>
+    <span class="cursor" [style.top.%]="reading.fraction * 100"></span>
+  </div>
+}
