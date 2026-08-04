@@ -48,6 +48,10 @@ cd apps/demo-angular && pnpm start                # ng serve, :4200
 - **`packages/angular`** resolves `@treekit/core` through node_modules → `packages/core/dist`, so
   `ng test` and `ng build treekit` need core built first. Root `pnpm build` orders this correctly.
 
+`tsup` runs with `clean: true`, so while core is building the editor briefly reports
+`Could not find a declaration file for module '@treekit/core'`. It's a transient LSP read of a
+deleted `dist/` — ignore it unless a real toolchain command fails.
+
 ### The staleness trap this replaced (don't reintroduce it)
 
 The demo used to consume both libraries through build output, which went stale silently in two
@@ -63,7 +67,10 @@ missing at runtime, the option-push effect threw, change detection aborted mid-c
 rendered zero rows with no scrollbar and no clue in the build output.
 
 Source-linking removes both. `serve.options.prebundle.exclude` in `apps/demo-angular/angular.json`
-stays as a backstop for the node_modules path. If the demo ever renders blank again, **check the
+stays as a backstop for the node_modules path. **List only `@treekit/core` there** — excluding
+`@treekit/angular` forces esbuild to resolve it from node_modules, where the symlink points at a
+source package with no `main`/`exports`, and the build fails with
+`Could not resolve "@treekit/angular"`. If the demo ever renders blank again, **check the
 browser console first** — a throw inside a component `effect()` aborts change detection before the
 view refreshes, so a stale-API error presents as a blank component, not as an error banner.
 `rm -rf apps/demo-angular/.angular/cache` is the escape hatch.
@@ -115,7 +122,7 @@ Multi-selection with the anchor tracking that ranges need. Deliberately _not_ in
 selection is not structural, and every `TreeState` mutator ends in an O(n) recompute plus a
 notification — moving a highlight must not pay that.
 
-Two rules carry most of the design weight:
+Three rules carry most of the design weight:
 
 - **Ids, not node references**, so a selection survives `setSource` and node churn.
 - **`selectedNodes()` is visible-only** while `selectedIds()` keeps hidden ids. That single rule
@@ -138,7 +145,9 @@ nothing.
 Deliberately thin. Notable patterns, all load-bearing:
 
 - Core objects are **not reactive**. `TkTree` keeps a monotonic `_version` signal bumped by every state/engine notification; every `computed()` reads `this._version()` first to force re-derivation from the plain objects.
+- **The repo is zoneless** — Angular 22 defaults to it and zone.js is absent, so `NgZone` resolves to `NoopNgZone` and change detection is signal-driven and asynchronous. The `_zone` wrapping exists for zone.js consumers: **outputs are wrapped, internal `_bump`/`announce` writes are not** (those notify the scheduler on their own). Keep that split.
 - Engines attach inside `runOutsideAngular`; drops re-enter via `_zone.run`.
+- `state` is a **required input**, so reading `tree.rows()` from a parent's `computed()` during the pass that creates the view throws `NG0950` — and an uncaught throw there aborts change detection, so it presents as a blank page. Read child state in `afterRenderEffect`, not `computed`.
 - Scalar option inputs (`rowHeight`, `indentWidth`, `autoScrollEdge`) are read `untracked` at attach time and pushed through **dedicated update effects** — reading them tracked would tear the engines down on every change, resetting keyboard focus and any in-flight drag.
 - a11y uses `aria-activedescendant`. `activeDescendant()` returns `null` when the active row is not currently rendered, so the attribute never points at a missing element.
 
@@ -157,6 +166,7 @@ Deliberately thin. Notable patterns, all load-bearing:
 - `src/virtualizer/conformance.spec.ts` runs **one shared suite over every `TreeVirtualizer` implementation** via `describe.each`. Any new virtualizer belongs in that list — it's the enforcement mechanism for the geometry contract above.
 - jsdom has no layout, so specs mock geometry explicitly: `getBoundingClientRect`, `clientHeight`/`scrollHeight` via `defineProperty`, a `ResizeObserverStub`, and a manual `scrollTo` that dispatches `scroll`.
 - The Angular spec uses a `StubVirtualizer` that renders every row, for the same reason.
+- Under zoneless, `fixture.detectChanges()` before every assertion makes a spec pass whether or not the component ever notifies the scheduler. Keep at least one `await fixture.whenStable()` path with no manual `detectChanges()` — that's the only kind of spec that catches a blank-render regression. The same applies in-browser: settle two `requestAnimationFrame`s before reading the DOM.
 
 ## Releases
 
