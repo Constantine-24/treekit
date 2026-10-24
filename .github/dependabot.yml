@@ -40,8 +40,15 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: 'react-dom'
         update-types: ['version-update:semver-major']
+      # changesets/action v2 requires Changesets v3; upgrade the CLI and the action together, by hand.
+      - dependency-name: '@changesets/cli'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      # v2 requires @changesets/cli v3 (see the npm ignore above); move both together, by hand.
+      - dependency-name: 'changesets/action'
+        update-types: ['version-update:semver-major']
