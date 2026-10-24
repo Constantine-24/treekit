@@ -5,3 +5,5 @@ coverage/
 .serena/
 pnpm-lock.yaml
 CHANGELOG.md
+_site/
+*.tgz

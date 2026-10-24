@@ -1,0 +1,10 @@
+# Codex project configuration — mirrors the Claude Code setup (see AGENTS.md).
+# Put API keys (e.g. a context7 key via `--api-key`) in your user-level ~/.codex/config.toml, never here.
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@latest"]

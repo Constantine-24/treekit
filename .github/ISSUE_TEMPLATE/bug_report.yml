@@ -1,0 +1,66 @@
+name: Bug report
+description: Something in treekit doesn't work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to report a bug! A minimal reproduction (StackBlitz or a small repo) gets it fixed fastest.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      multiple: true
+      options:
+        [
+          '@treekit/core',
+          '@treekit/angular',
+          '@treekit/react',
+          'Vanilla / headless usage',
+          'Docs / demo',
+        ]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        [
+          Rendering / virtualization,
+          Pointer drag-and-drop,
+          Keyboard navigation / keyboard DnD,
+          Selection,
+          Filtering,
+          Lazy loading,
+          Accessibility,
+          Styling / theming,
+          Other,
+        ]
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Link to a StackBlitz / repo, or the smallest code that shows the problem.
+      render: tsx
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: '@treekit/* packages, and @angular/core or react if relevant'
+      placeholder: '@treekit/core 0.1.0, @treekit/react 0.1.0, react 19.2.0'
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser & OS
+      placeholder: Chrome 141, macOS 26

@@ -1,0 +1,20 @@
+---
+description: Project rules for treekit — always apply
+alwaysApply: true
+---
+
+The authoritative agent rules for this repository live in `CLAUDE.md` and `.claude/rules/*.md`. Read and follow them; do not rely on this file's summary.
+
+@CLAUDE.md
+@.claude/rules/architecture.md
+@.claude/rules/commands.md
+@.claude/rules/code-style.md
+@.claude/rules/testing.md
+@.claude/rules/styling.md
+@.claude/rules/accessibility.md
+@.claude/rules/workflow.md
+@.claude/rules/review-gate.md
+@.claude/rules/release.md
+@.claude/rules/limitations.md
+
+When working under `packages/core/`, `packages/angular/` or `packages/react/`, also read that directory's `CLAUDE.md`; under `apps/`, read `apps/CLAUDE.md`.

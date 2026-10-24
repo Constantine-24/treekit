@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      angular:
+        patterns: ['@angular/*', '@angular-devkit/*', 'ng-packagr']
+      react:
+        patterns:
+          [
+            'react',
+            'react-dom',
+            '@types/react',
+            '@types/react-dom',
+            '@vitejs/plugin-react',
+            'eslint-plugin-react-hooks',
+            '@testing-library/*',
+          ]
+      dev-tooling:
+        dependency-type: development
+        exclude-patterns:
+          [
+            '@angular/*',
+            '@angular-devkit/*',
+            'ng-packagr',
+            'react',
+            'react-dom',
+            '@types/react*',
+            '@vitejs/plugin-react',
+            'eslint-plugin-react-hooks',
+            '@testing-library/*',
+          ]
+    # Framework majors change an adapter's peer range — do them by hand, as a deliberate release.
+    ignore:
+      - dependency-name: '@angular/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-dom'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
