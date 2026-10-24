@@ -1,0 +1,81 @@
+{
+  "name": "@treekit/react",
+  "version": "0.0.0",
+  "description": "React component over @treekit/core: virtualized tree with native HTML5 drag-and-drop, keyboard-accessible DnD, multi-select, filtering, and lazy loading.",
+  "license": "MIT",
+  "author": "Konstantin Penzin",
+  "homepage": "https://constantine-24.github.io/treekit/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Constantine-24/treekit.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/Constantine-24/treekit/issues"
+  },
+  "keywords": [
+    "react",
+    "tree",
+    "treeview",
+    "tree-view",
+    "drag-and-drop",
+    "dnd",
+    "virtualized",
+    "virtual-scroll",
+    "keyboard",
+    "accessibility"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@treekit/core": "workspace:^",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.3.0",
+    "@treekit/core": "workspace:*",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.30.0",
+    "eslint-plugin-react-hooks": "^7.1.0",
+    "jsdom": "^26.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.35.0",
+    "vitest": "^3.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

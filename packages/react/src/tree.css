@@ -1,0 +1,189 @@
+/*
+ * Default stylesheet for @treekit/react — import once: `import '@treekit/react/styles.css'`.
+ *
+ * A plain-CSS port of the Angular adapter's `tree.scss`, with the same `tk-*` class names and
+ * the same `--tk-*` custom properties (a spec compares the token sets). Theme the tree by
+ * setting those properties on `.tk-tree` or any ancestor.
+ */
+
+.tk-tree {
+  display: block;
+  height: 100%;
+}
+
+.tk-viewport {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+}
+
+.tk-viewport:focus-visible {
+  outline: 2px solid var(--tk-focus-color, #3b82f6);
+  outline-offset: -2px;
+}
+
+.tk-content {
+  position: relative;
+  min-width: 100%;
+}
+
+.tk-row {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+}
+
+.tk-node {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-node-gap, 0.25rem);
+  /* `min-height` rather than `height` so a measured (variable-height) row can grow to its
+     content. Against a fixed-height row this resolves identically. */
+  min-height: 100%;
+  /* Shift-clicking rows would otherwise drag a text selection across them. */
+  user-select: none;
+  padding-right: var(--tk-node-padding-inline, 0.5rem);
+  border-radius: var(--tk-node-radius, 4px);
+  color: var(--tk-text-color, inherit);
+}
+
+.tk-node:hover {
+  background-color: var(--tk-hover-bg, rgba(127, 127, 127, 0.08));
+}
+
+.tk-node.selected {
+  background-color: var(--tk-selected-bg, rgba(59, 130, 246, 0.12));
+}
+
+.tk-node.active {
+  outline: 1px solid var(--tk-focus-color, #3b82f6);
+  outline-offset: -1px;
+}
+
+.tk-node.folder-hovered {
+  background-color: var(--tk-drop-bg, rgba(59, 130, 246, 0.2));
+  outline: 1px dashed var(--tk-focus-color, #3b82f6);
+  outline-offset: -1px;
+}
+
+.tk-node.draggable {
+  cursor: grab;
+}
+
+/* Indent guides: one hairline per level, painted only across the indentation
+   (`background-size` stops the repeat at the row's own depth). This is why the state
+   backgrounds above use `background-color` rather than the shorthand, which would reset
+   this image. */
+.tk-node.tk-guides {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--tk-indent-guide-color, rgba(127, 127, 127, 0.25)) 0 1px,
+    transparent 1px var(--tk-indent-width, 18px)
+  );
+  background-repeat: no-repeat;
+  background-size: var(--tk-guide-width, 0) 100%;
+}
+
+.tk-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tk-placeholder-padding, 2rem 1rem);
+  color: var(--tk-text-muted-color, inherit);
+  text-align: center;
+}
+
+.tk-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--tk-toggle-size, 1.25rem);
+  height: var(--tk-toggle-size, 1.25rem);
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--tk-toggle-color, currentColor);
+  cursor: pointer;
+}
+
+.tk-toggle svg {
+  transition: transform 120ms ease;
+}
+
+.tk-toggle.expanded svg {
+  transform: rotate(90deg);
+}
+
+.tk-toggle:hover {
+  background-color: var(--tk-hover-bg, rgba(127, 127, 127, 0.12));
+}
+
+.tk-toggle-spacer {
+  flex: 0 0 auto;
+  width: var(--tk-toggle-size, 1.25rem);
+}
+
+.tk-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tk-spinner {
+  flex: 0 0 auto;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-inline: 3px;
+  border: 2px solid var(--tk-spinner-track, rgba(127, 127, 127, 0.25));
+  border-top-color: var(--tk-spinner-color, #3b82f6);
+  border-radius: 50%;
+  animation: tk-spin 0.8s linear infinite;
+}
+
+.tk-insertion-line {
+  position: absolute;
+  right: var(--tk-insertion-inset-right, 0.5rem);
+  height: 2px;
+  margin-top: -1px;
+  background: var(--tk-insertion-color, #3b82f6);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.tk-insertion-line::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.tk-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes tk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-spinner {
+    animation-duration: 1.6s;
+  }
+
+  .tk-toggle svg {
+    transition: none;
+  }
+}
