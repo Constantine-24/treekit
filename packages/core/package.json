@@ -36,14 +36,24 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./tanstack": {
-      "types": "./dist/tanstack.d.ts",
-      "import": "./dist/tanstack.js",
-      "require": "./dist/tanstack.cjs"
+      "import": {
+        "types": "./dist/tanstack.d.ts",
+        "default": "./dist/tanstack.js"
+      },
+      "require": {
+        "types": "./dist/tanstack.d.cts",
+        "default": "./dist/tanstack.cjs"
+      }
     }
   },
   "main": "./dist/index.cjs",

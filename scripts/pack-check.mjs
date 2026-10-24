@@ -2,25 +2,31 @@
 /**
  * Packs every publishable package exactly as `pnpm publish` would (honouring
  * `publishConfig.directory` for @treekit/angular) and checks each tarball:
- * required files present, no sources or specs, and no `workspace:` specifier
- * left in the packed package.json. Run after `pnpm build`.
+ * required files present, no sources or specs, no `workspace:` specifier left
+ * in the packed package.json, and type declarations that resolve for every
+ * consumer (arethetypeswrong). Run after `pnpm build`.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+// `attw` profiles: node16 covers CJS and ESM consumers (core's `tanstack` subpath can't
+// resolve under legacy node10, which predates `exports`); the Angular package is ESM-only.
 const PACKAGES = [
   {
     dir: 'packages/core',
+    attw: ['--profile', 'node16'],
     required: ['dist/index.js', 'dist/index.cjs', 'dist/index.d.ts', 'dist/tanstack.js'],
   },
   {
     dir: 'packages/react',
+    attw: ['--profile', 'node16', '--exclude-entrypoints', 'styles.css'],
     required: ['dist/index.js', 'dist/index.cjs', 'dist/index.d.ts', 'dist/styles.css'],
   },
   {
     dir: 'packages/angular/projects/treekit',
+    attw: ['--profile', 'esm-only'],
     required: ['fesm2022/treekit-angular.mjs', 'types/treekit-angular.d.ts'],
   },
 ];
@@ -55,6 +61,17 @@ try {
         if (String(range).startsWith('workspace:'))
           problems.push(`${field}.${dep} is still "${range}"`);
       }
+    }
+
+    try {
+      execFileSync('pnpm', ['exec', 'attw', filename, '--format', 'ascii', ...pkg.attw], {
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      problems.push(
+        `type declarations do not resolve for every consumer:\n${error.stdout ?? error}`
+      );
     }
 
     console.log(`${problems.length ? '✗' : '✓'} ${name}@${version} — ${paths.length} files`);

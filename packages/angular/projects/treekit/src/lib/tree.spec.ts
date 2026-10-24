@@ -258,6 +258,18 @@ describe('TkTree', () => {
     expect(host.drops[0]!.target?.node.id).toBe('b');
   });
 
+  it('never mutates the tree on drop', () => {
+    const before = host.state.toHierarchy();
+
+    pressKey('End');
+    pressKey(' ');
+    pressKey('ArrowUp');
+    pressKey(' ');
+
+    expect(host.drops).toHaveLength(1);
+    expect(host.state.toHierarchy()).toEqual(before);
+  });
+
   it('announces keyboard DnD steps in the live region', () => {
     pressKey('End');
     pressKey(' ');
@@ -270,6 +282,17 @@ describe('TkTree', () => {
     host.isReadonly.set(true);
     fixture.detectChanges();
     expect(nodeElement('c').getAttribute('draggable')).toBe('false');
+  });
+
+  it('exposes the indent width as a custom property on the host', () => {
+    const tree = root().querySelector<HTMLElement>('tk-tree')!;
+    expect(tree.style.getPropertyValue('--tk-indent-width')).toBe('18px');
+
+    nodeElement('a').querySelector<HTMLButtonElement>('.tk-toggle')!.click();
+    fixture.detectChanges();
+
+    expect(nodeElement('a').style.paddingLeft).toBe('0px');
+    expect(nodeElement('a1').style.paddingLeft).toBe('18px');
   });
 
   it('highlights the selected row', () => {
@@ -487,6 +510,13 @@ describe('TkTree placeholders and imperative API', () => {
     toggle.click();
     fixture.detectChanges();
     expect(host.collapsedIds).toEqual(['a']);
+  });
+
+  it('does not emit expanded for programmatic expansion', () => {
+    host.state.expandAll();
+    fixture.detectChanges();
+
+    expect(host.expandedIds).toEqual([]);
   });
 
   it('expands and collapses everything through the imperative API', () => {

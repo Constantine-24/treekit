@@ -91,7 +91,13 @@ export class App {
   private readonly _version = signal(0);
   private _addedCounter = 0;
 
-  protected readonly virtualizer = computed(() => createVirtualizer(this.toggles().measuredRows));
+  /**
+   * Narrowed to the one toggle the virtualizer depends on: a new virtualizer
+   * re-attaches the tree (resetting selection and focus), so flipping "Guides"
+   * or "Read only" must not create one.
+   */
+  private readonly _measuredRows = computed(() => this.toggles().measuredRows);
+  protected readonly virtualizer = computed(() => createVirtualizer(this._measuredRows()));
 
   protected readonly counts = computed<Record<GaugeKey, number>>(() => {
     this._version();

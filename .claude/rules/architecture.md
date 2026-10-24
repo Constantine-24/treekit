@@ -34,7 +34,7 @@ The internals and invariants of each layer are in `packages/core/CLAUDE.md` — 
 
 <important if="you are changing @treekit/angular or @treekit/react, or adding a feature to either adapter">
 
-- **The adapters are kept in parity.** Same feature set, same names (Angular input `multiSelect` ↔ React prop `multiSelect`; Angular output `nodeClick` ↔ React `onNodeClick`), same `tk-*` class names and `--tk-*` CSS custom properties, same DOM/ARIA output. A feature added to one adapter is added to the other in the same change, or recorded in `BACKLOG.md` with the reason.
+- **The adapters are kept in parity.** Same feature set, same `tk-*` class names and `--tk-*` CSS custom properties, same DOM/ARIA output. Inputs and props share names (`multiSelect` ↔ `multiSelect`). Outputs map to idiomatic React callbacks: `nodeClick` → `onNodeClick`, `nodeContextMenu` → `onNodeContextMenu`, `selectedIdsChange` → `onSelectedIdsChange`, `selectionChange` → `onSelectionChange`, and four that read better as verbs in React — `dropped` → `onDrop`, `nodeDblClick` → `onNodeDoubleClick`, `expanded` → `onExpand`, `collapsed` → `onCollapse`. Projected templates map to render props (`tkTreeNodeDef` → `renderNode`, `tkTreeEmpty` → `renderEmpty`, `tkTreeLoading` → `renderLoading`). A feature added to one adapter is added to the other in the same change, or recorded in `BACKLOG.md` with the reason.
 - Adapters contain wiring only. If an adapter needs logic that isn't framework glue, it belongs in the core where the other adapter (and vanilla users) get it too.
 - The `--tk-*` token sets of `packages/angular/projects/treekit/src/lib/tree.scss` and `packages/react/src/tree.css` are compared by a spec in `packages/react` — change both together.
   </important>

@@ -366,12 +366,28 @@ describe('TkTree engine lifecycle', () => {
     expect(virtualizer.attachCount).toBe(virtualizer.detachCount);
   });
 
-  it('stops listening to the state after unmount', () => {
-    const { state, unmount } = setup();
-    unmount();
+  it('releases its state subscription on unmount, including under StrictMode', () => {
+    const state = createState();
+    const subscribe = state.subscribe.bind(state);
+    let live = 0;
+    state.subscribe = listener => {
+      live++;
+      const unsubscribe = subscribe(listener);
+      return () => {
+        live--;
+        unsubscribe();
+      };
+    };
 
-    // Would throw "update on an unmounted component" style errors if still subscribed.
-    expect(() => state.expandAll()).not.toThrow();
+    const { unmount } = render(
+      <StrictMode>
+        <TkTree state={state} virtualizer={new StubVirtualizer()} />
+      </StrictMode>
+    );
+    expect(live).toBe(1);
+
+    unmount();
+    expect(live).toBe(0);
   });
 });
 
