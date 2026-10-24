@@ -1,0 +1,523 @@
+/*
+ * The landing page. Builds on @treekit/demo-shared/theme.css (tokens, base, tree theming)
+ * so the site and the two showcases read as one product.
+ */
+
+.site {
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --measure: 76rem;
+
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.site > * {
+  width: 100%;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 10;
+  width: auto;
+  padding: 0.5rem 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--signal);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 1.25rem var(--gutter);
+}
+
+.wordmark {
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-left: auto;
+}
+
+.site-header nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  font-family: var(--display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.site-header nav a:hover {
+  color: var(--ink);
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 5rem) var(--gutter) clamp(3rem, 7vw, 6rem);
+}
+
+.hero h1 {
+  margin: 1rem 0 1.25rem;
+  font-family: var(--display);
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--signal);
+}
+
+.lede {
+  max-width: 34rem;
+  margin: 0 0 1.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.hero .hint {
+  margin: 0.625rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.button:hover {
+  border-color: var(--signal);
+}
+
+.button.primary {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: var(--panel);
+}
+
+.button.primary:hover {
+  background: color-mix(in srgb, var(--signal) 88%, var(--ink));
+}
+
+/* ── Copy command ─────────────────────────────────────────────────────── */
+
+.copy-command {
+  display: flex;
+  align-items: stretch;
+  max-width: 34rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+}
+
+.copy-command code {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.copy-command .prompt {
+  margin-right: 0.75rem;
+  color: var(--ink-muted);
+  user-select: none;
+}
+
+.copy-command button {
+  min-width: 5.5rem;
+  border: none;
+  border-left: 1px solid var(--rule-strong);
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: var(--display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.copy-command button:hover {
+  color: var(--signal);
+}
+
+/* ── The live tree ────────────────────────────────────────────────────── */
+
+.hero-tree {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  box-shadow:
+    0 1px 0 var(--rule),
+    0 24px 48px -32px rgba(16, 20, 24, 0.35);
+}
+
+.hero-tree-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pulse {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.readout {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.readout span {
+  color: var(--ink);
+}
+
+.readout .accent {
+  color: var(--signal);
+}
+
+.hero-filter {
+  margin: 0.75rem 0.875rem 0;
+  padding: 0.4375rem 0.625rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--ground);
+  color: inherit;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.hero-tree-screen {
+  height: clamp(18rem, 44vh, 26rem);
+  margin: 0.75rem 0.875rem;
+  border: 1px solid var(--rule);
+}
+
+.hero-tree-status {
+  min-height: 2.5rem;
+  padding: 0.625rem 0.875rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────── */
+
+.features,
+.code,
+.showcases {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(3.5rem, 8vw, 6rem);
+}
+
+.features > h2,
+.showcases > h2,
+.section-head h2 {
+  margin: 0 0 1.25rem;
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+  gap: 1rem 2rem;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+}
+
+.section-head p {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+/* The spec sheet: a ruled grid, like the gauges in the showcases. */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.feature {
+  padding: 1.5rem 1.5rem 1.75rem;
+  background: var(--panel);
+}
+
+.feature-index {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--signal);
+}
+
+.feature h3 {
+  margin: 0.5rem 0 0.5rem;
+  font-family: var(--display);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.feature p {
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+/* ── Code tabs ────────────────────────────────────────────────────────── */
+
+.code-tabs {
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+}
+
+.code-tablist {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+}
+
+.code-tablist [role='tab'] {
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: var(--display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.code-tablist [role='tab'][aria-selected='true'] {
+  border-bottom-color: var(--signal);
+  color: var(--ink);
+}
+
+.code-panel {
+  padding: 1rem;
+}
+
+.code-panel .copy-command {
+  max-width: none;
+  background: var(--ground);
+}
+
+.code-file {
+  margin: 1rem 0 0.5rem;
+}
+
+.code-panel pre {
+  max-height: 32rem;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  border: 1px solid var(--rule);
+  background: var(--ground);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+/* ── Showcase links ───────────────────────────────────────────────────── */
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.showcase {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 1.25rem 1.25rem 2.75rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 120ms ease;
+}
+
+.showcase:hover {
+  border-color: var(--signal);
+}
+
+.showcase-title {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.showcase-body {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+.showcase-arrow {
+  position: absolute;
+  bottom: 1rem;
+  left: 1.25rem;
+  font-family: var(--mono);
+  color: var(--signal);
+  transition: transform 120ms ease;
+}
+
+.showcase:hover .showcase-arrow {
+  transform: translateX(0.25rem);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  max-width: var(--measure);
+  margin: auto auto 0;
+  padding: 1.5rem var(--gutter) 2rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+
+.site-footer .spacer {
+  flex: 1;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 64rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .showcase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .site-header {
+    flex-wrap: wrap;
+  }
+
+  .site-header nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .site-header .ghost {
+    margin-left: auto;
+  }
+
+  .feature-grid,
+  .showcase-grid,
+  .section-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
