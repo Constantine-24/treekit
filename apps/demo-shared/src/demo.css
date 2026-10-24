@@ -1,4 +1,12 @@
-:host {
+/*
+ * Layout of the two showcases (apps/demo-react, apps/demo-angular). Requires theme.css.
+ *
+ * Every component styles the class on its own root element — an Angular host
+ * gets it through `host: { class }`, a React component renders it — so the
+ * same rules apply to both apps unchanged.
+ */
+
+.demo {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -20,20 +28,34 @@
   align-items: center;
   gap: 0.875rem;
   min-width: 0;
+  flex: 1;
 }
 
 .wordmark {
+  margin: 0;
   font-family: var(--display);
   font-size: 1.0625rem;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
+  color: inherit;
+  text-decoration: none;
+}
+
+.wordmark a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .rule-h {
   width: 2.5rem;
   height: 1px;
   background: var(--rule-strong);
+}
+
+.masthead nav {
+  display: flex;
+  gap: 0.5rem;
 }
 
 /* ── Layout ───────────────────────────────────────────────────────────── */
@@ -66,6 +88,7 @@
 .gauges {
   display: grid;
   gap: 1px;
+  margin: 0;
   background: var(--rule);
   border: 1px solid var(--rule);
 }
@@ -77,25 +100,31 @@
   gap: 0.5rem;
   padding: 0.5rem 0.625rem;
   background: var(--panel);
-
-  .value {
-    font-family: var(--mono);
-    font-size: 0.9375rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  &.accent .value {
-    color: var(--signal);
-  }
 }
 
-/* ── Palette ──────────────────────────────────────────────────────────── */
+.gauge dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge.accent dd {
+  color: var(--signal);
+}
+
+/* ── Palette & key legend ─────────────────────────────────────────────── */
 
 .palette,
-.keys {
+.key-legend {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.palette h2,
+.key-legend h2 {
+  margin: 0;
 }
 
 .hint {
@@ -121,19 +150,17 @@
   font-size: 0.75rem;
   cursor: grab;
   transition: border-color 120ms ease;
-
-  &:hover {
-    border-color: var(--signal);
-  }
-
-  &:active {
-    cursor: grabbing;
-  }
 }
 
-/* ── Key legend ───────────────────────────────────────────────────────── */
+.chip:hover {
+  border-color: var(--signal);
+}
 
-.keys dl {
+.chip:active {
+  cursor: grabbing;
+}
+
+.key-legend dl {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.25rem 0.625rem;
@@ -141,13 +168,13 @@
   font-size: 0.75rem;
 }
 
-.keys dt {
+.key-legend dt {
   font-family: var(--mono);
   color: var(--ink);
   white-space: nowrap;
 }
 
-.keys dd {
+.key-legend dd {
   margin: 0;
   color: var(--ink-muted);
 }
@@ -178,28 +205,11 @@
   font-size: 0.8125rem;
 }
 
-.ghost {
-  padding: 0.3125rem 0.75rem;
-  border: 1px solid var(--rule-strong);
-  background: var(--panel);
-  color: inherit;
-  font-family: var(--display);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color 120ms ease;
-
-  &:hover {
-    border-color: var(--signal);
-  }
-}
-
 .switch {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
+  min-height: 1.5rem;
   font-size: 0.75rem;
   color: var(--ink-muted);
   cursor: pointer;
@@ -208,45 +218,13 @@
 
 /* ── The screen ───────────────────────────────────────────────────────── */
 
-.screen {
+.tree-panel {
   position: relative;
   flex: 1;
   min-height: 0;
   margin: 1.25rem;
   border: 1px solid var(--rule);
   background: var(--panel);
-}
-
-tk-tree {
-  --tk-text-color: var(--ink);
-  --tk-hover-bg: var(--signal-wash);
-  --tk-selected-bg: var(--signal-wash);
-  --tk-focus-color: var(--signal);
-  --tk-drop-bg: var(--into-wash);
-  --tk-insertion-color: var(--signal);
-  --tk-toggle-color: var(--ink-muted);
-  --tk-spinner-color: var(--signal);
-  --tk-indent-guide-color: var(--rule);
-  --tk-node-radius: 0;
-  --tk-text-muted-color: var(--ink-muted);
-
-  height: 100%;
-}
-
-.row-name {
-  flex: 1;
-  overflow: hidden;
-  font-family: var(--mono);
-  font-size: 0.8125rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.row-unit {
-  font-family: var(--mono);
-  font-size: 0.6875rem;
-  color: var(--ink-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ── Signature: the tree reporting its own drop math ──────────────────── */
@@ -256,51 +234,51 @@ tk-tree {
   position: fixed;
   z-index: 5;
   pointer-events: none;
+}
 
-  .band {
-    position: absolute;
-    top: 25%;
-    right: 0;
-    left: 0;
-    height: 50%;
-    background: var(--into-wash);
-  }
+.calipers .band {
+  position: absolute;
+  top: 25%;
+  right: 0;
+  left: 0;
+  height: 50%;
+  background: var(--into-wash);
+}
 
-  .tick {
-    position: absolute;
-    left: 0;
-    width: 0.5rem;
-    height: 1px;
-    background: var(--rule-strong);
+.calipers .tick {
+  position: absolute;
+  left: 0;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--rule-strong);
+}
 
-    &.mid {
-      width: 0.875rem;
-    }
-  }
+.calipers .tick.mid {
+  width: 0.875rem;
+}
 
-  .cursor {
-    position: absolute;
-    right: 0;
-    left: 0;
-    height: 1px;
-    background: var(--signal);
+.calipers .cursor {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--signal);
+}
 
-    &::after {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: 0;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--signal);
-    }
-  }
+.calipers .cursor::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--signal);
+}
 
-  &.into .cursor,
-  &.into .cursor::after {
-    background: var(--into);
-  }
+.calipers.into .cursor,
+.calipers.into .cursor::after {
+  background: var(--into);
 }
 
 /* ── Status bar ───────────────────────────────────────────────────────── */
@@ -309,7 +287,7 @@ tk-tree {
  * The readout strip. Idle it carries the status line; during a drag it becomes
  * the instrument's live channel, showing the library's real drop arithmetic.
  */
-.statusbar {
+.status-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -321,47 +299,47 @@ tk-tree {
   border-left: 2px solid var(--rule-strong);
   background: var(--panel);
   transition: border-color 120ms ease;
-
-  &.live {
-    border-left-color: var(--signal);
-  }
-
-  &.into {
-    border-left-color: var(--into);
-  }
-
-  .cell {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.4375rem;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-
-    i {
-      font-style: normal;
-      font-size: 0.6875rem;
-      color: var(--ink-muted);
-    }
-  }
-
-  .intent {
-    color: var(--signal);
-  }
-
-  &.into .intent {
-    color: var(--into);
-  }
-
-  code {
-    margin-left: auto;
-    font-family: var(--mono);
-    font-size: 0.6875rem;
-    color: var(--ink-muted);
-  }
 }
 
-.status {
+.status-bar.live {
+  border-left-color: var(--signal);
+}
+
+.status-bar.into {
+  border-left-color: var(--into);
+}
+
+.status-bar .cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4375rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-bar .cell i {
+  font-style: normal;
+  font-size: 0.6875rem;
+  color: var(--ink-muted);
+}
+
+.status-bar .intent {
+  color: var(--signal);
+}
+
+.status-bar.into .intent {
+  color: var(--into);
+}
+
+.status-bar code {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--ink-muted);
+}
+
+.status-bar .status {
   font-family: var(--mono);
   font-size: 0.75rem;
   color: var(--ink-muted);
@@ -375,9 +353,14 @@ tk-tree {
    * region here would put two competing scrollers on a small screen, with the
    * rail's own content hidden below a fold nobody expects.
    */
-  :host {
+  .demo {
     height: auto;
     min-height: 100%;
+  }
+
+  .masthead .label,
+  .rule-h {
+    display: none;
   }
 
   .deck {
@@ -398,7 +381,7 @@ tk-tree {
   }
 
   /* The tree keeps its own viewport, so it needs a definite height. */
-  .screen {
+  .tree-panel {
     flex: none;
     height: 60vh;
   }

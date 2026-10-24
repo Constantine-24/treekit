@@ -13,7 +13,7 @@
         "@schematics/angular:component": {
           "inlineTemplate": true,
           "inlineStyle": true,
-          "style": "scss",
+          "style": "css",
           "skipTests": true
         },
         "@schematics/angular:class": {
@@ -47,7 +47,6 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
@@ -60,7 +59,8 @@
               "@fontsource/ibm-plex-sans/500.css",
               "@fontsource/ibm-plex-mono/400.css",
               "@fontsource/ibm-plex-mono/500.css",
-              "src/styles.scss"
+              "../demo-shared/src/theme.css",
+              "../demo-shared/src/demo.css"
             ]
           },
           "configurations": {
@@ -103,6 +103,12 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json"
+          }
         }
       }
     }

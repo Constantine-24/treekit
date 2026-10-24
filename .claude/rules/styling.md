@@ -16,6 +16,7 @@ The core ships no CSS. Each adapter ships one default stylesheet with the **same
 
 <important if="you are styling apps/site, apps/demo-react, or apps/demo-angular">
 
-- Both demos and the site share one theme: `apps/demo-shared/src/theme.css` (the "instrument panel" tokens `--ink`, `--paper`, `--signal`, `--into`, … in light and dark, plus the IBM Plex fonts). App-local styles reference those tokens; no hard-coded colours.
-- The two demos must look identical: a style change in one is made in the other in the same change.
+- Both demos and the site share one theme: `apps/demo-shared/src/theme.css` — the "instrument panel" tokens (`--ink`, `--ink-muted`, `--ground`, `--panel`, `--rule`, `--signal`, `--into`, …) for light, dark-by-OS and the `<html data-theme>` toggle, plus the mapping of `--tk-*` onto them. Fonts are IBM Plex via `@fontsource`, imported per app. App styles reference the tokens; no hard-coded colours.
+- The two demos have **no styles of their own**: their whole layout is `apps/demo-shared/src/demo.css`, written against the class each component puts on its root element (an Angular `host: { class }`, a React root element). So they cannot drift apart visually — keep it that way and add new demo styles there.
+- Amber (`--into`) means exactly one thing — an `into` drop. Don't reuse it.
   </important>

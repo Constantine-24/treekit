@@ -1,0 +1,172 @@
+/*
+ * treekit — "instrument panel" theme, shared by apps/site and both showcases.
+ *
+ * Styled as measurement equipment: a cool paper ground, hairline rules,
+ * monospace for every number, and exactly one saturated accent. Amber is
+ * reserved for a single meaning — an `into` drop — so it never competes with
+ * the indigo signal colour.
+ *
+ * The theme follows the OS until `<html data-theme>` is set by the toggle
+ * (`applyTheme` in theme.ts).
+ */
+
+:root {
+  color-scheme: light;
+
+  --ink: #101418;
+  --ink-muted: #5b6573;
+  --ground: #f2f4f6;
+  --panel: #ffffff;
+  --rule: #dde2e7;
+  --rule-strong: #c3ccd6;
+  --signal: #2f4fe0;
+  --signal-wash: rgba(47, 79, 224, 0.09);
+  --into: #c2470a;
+  --into-wash: rgba(232, 89, 12, 0.12);
+
+  --display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --rail: 15rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --ink: #e7ecf2;
+    --ink-muted: #9aa5b4;
+    --ground: #14181d;
+    --panel: #1b2027;
+    --rule: #2a313a;
+    --rule-strong: #3c4551;
+    --signal: #8ea4ff;
+    --signal-wash: rgba(125, 151, 255, 0.14);
+    --into: #ff9247;
+    --into-wash: rgba(255, 146, 71, 0.16);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ink: #e7ecf2;
+  --ink-muted: #9aa5b4;
+  --ground: #14181d;
+  --panel: #1b2027;
+  --rule: #2a313a;
+  --rule-strong: #3c4551;
+  --signal: #8ea4ff;
+  --signal-wash: rgba(125, 151, 255, 0.14);
+  --into: #ff9247;
+  --into-wash: rgba(255, 146, 71, 0.16);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The framework mount points fill the page, so the apps can lay out full-height. */
+app-root,
+#root {
+  display: block;
+  height: 100%;
+}
+
+a {
+  color: var(--signal);
+}
+
+/* Equipment labelling: small, uppercase, widely tracked. */
+.label {
+  font-family: var(--display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.ghost {
+  padding: 0.3125rem 0.75rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  color: inherit;
+  font-family: var(--display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+.ghost:hover {
+  border-color: var(--signal);
+}
+
+:where(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* The tree themed with the panel tokens — the same mapping everywhere it appears. */
+.tk-tree {
+  --tk-text-color: var(--ink);
+  --tk-hover-bg: var(--signal-wash);
+  --tk-selected-bg: var(--signal-wash);
+  --tk-focus-color: var(--signal);
+  --tk-drop-bg: var(--into-wash);
+  --tk-insertion-color: var(--signal);
+  --tk-toggle-color: var(--ink-muted);
+  --tk-spinner-color: var(--signal);
+  --tk-indent-guide-color: var(--rule);
+  --tk-node-radius: 0;
+  --tk-text-muted-color: var(--ink-muted);
+
+  height: 100%;
+}
+
+.row-name {
+  flex: 1;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-unit {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

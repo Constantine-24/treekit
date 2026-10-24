@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@treekit/core": ["../../packages/core/src/index.ts"],
+      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"]
+    }
+  },
+  "include": ["src"]
+}

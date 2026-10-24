@@ -12,7 +12,7 @@
 
 <important if="you are changing apps/demo-react or apps/demo-angular">
 
-- **The two demos mirror each other.** Same folder layout and component names under `src/app/` (`toolbar/`, `gauges/`, `palette/`, `tree-panel/`, `calipers/`, `key-legend/`, `theme-toggle/`), same features, same look. A change to one is made in the other in the same change.
+- **The two demos mirror each other.** Same folder layout and component names under `src/app/` (`toolbar/`, `gauges/`, `palette/`, `tree-panel/`, `calipers/`, `status-bar/`, `key-legend/`, `theme-toggle/`), one component per folder, same features, same look. A change to one is made in the other in the same change.
 - Fixtures, palette labels, the feature/toggle list and theme tokens come from `@treekit/demo-shared` — never duplicate them into an app.
 - **Import only the public API** (`@treekit/core`, `@treekit/core/tanstack`, `@treekit/angular`, `@treekit/react`). Never reach into `packages/*/src` by relative path — the demos prove the published surface is enough.
   </important>

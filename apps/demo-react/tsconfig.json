@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["node", "vite/client"],
+    /*
+     * Source-linked, like demo-angular: Vite aliases these to the package sources
+     * too (vite.config.ts), so library edits hot-reload with no rebuild. See
+     * apps/CLAUDE.md for the staleness trap this avoids.
+     */
+    "paths": {
+      "@treekit/core": ["../../packages/core/src/index.ts"],
+      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"],
+      "@treekit/react": ["../../packages/react/src/index.ts"],
+      "@treekit/demo-shared": ["../demo-shared/src/index.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

@@ -24,7 +24,8 @@
     "paths": {
       "@treekit/angular": ["../../packages/angular/projects/treekit/src/public-api.ts"],
       "@treekit/core": ["../../packages/core/src/index.ts"],
-      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"]
+      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"],
+      "@treekit/demo-shared": ["../demo-shared/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

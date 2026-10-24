@@ -1,0 +1,25 @@
+{
+  "name": "@treekit/demo-shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Source-only fixtures, theme and behaviour shared by apps/demo-react, apps/demo-angular and apps/site, so the two showcases stay identical.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./demo.css": "./src/demo.css",
+    "./theme.css": "./src/theme.css"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@treekit/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@tanstack/virtual-core": "^3.13.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
