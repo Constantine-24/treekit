@@ -4,6 +4,11 @@ Deferred work, newest first. Each item says why it was deferred and what "done" 
 
 ## Tooling
 
+### Vite 8
+
+- **Why deferred:** `@vitejs/plugin-react` 6 requires `vite ^8` (it imports `vite/internal`), and Vite 8 swaps the bundler for Rolldown — a toolchain migration across every Vite app, not a Dependabot merge. Dependabot's PR #4 (plugin-react 5 → 6) failed CI on exactly this and was closed; `.github/dependabot.yml` now ignores `vite` and `@vitejs/plugin-react` majors until this lands. The Angular apps are unaffected: `@angular/build` brings its own Vite.
+- **Done when:** `apps/site`, `apps/demo-react` and `apps/demo-vanilla` are on Vite 8 with `@vitejs/plugin-react` 6, Vitest is on a version that supports Vite 8 wherever the Vite apps and `packages/core` / `packages/react` use it, the source-linking aliases and the `optimizeDeps` staleness backstop still work (`apps/CLAUDE.md`), every gate plus `pnpm build:pages` is green, the three Pages builds are checked in a browser, and the two Dependabot ignores are removed.
+
 ### ESLint for the Angular workspace
 
 - **Why deferred:** `packages/angular` is a standalone Angular CLI workspace on its own TypeScript version, and adding `angular-eslint` means choosing a config that agrees with the root naming rules (`_camelCase` privates, explicit module boundary types) without fighting the Angular style guide. It was out of scope for the publish preparation.
