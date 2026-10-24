@@ -1,125 +1,244 @@
+<div align="center">
+
 # treekit
 
-Headless, virtualized tree with native HTML5 drag-and-drop. Framework-free core, thin Angular adapter.
+**A virtualized tree with native drag-and-drop — headless core, Angular and React adapters.**
 
-Most tree widgets bolt drag-and-drop onto a flow-layout list, which falls apart once the list is
-virtualized: placeholder elements shift absolutely-positioned rows, indices lie, and drop feedback
-flickers. treekit takes the opposite approach — rows are positioned by a virtualizer, and drop
-targets are resolved purely from the pointer position against the rendered rows. No placeholder ever
-enters the layout; a single insertion line (or folder highlight) is drawn on top.
+[![@treekit/core](https://img.shields.io/npm/v/@treekit/core?label=%40treekit%2Fcore&color=2f4fe0)](https://www.npmjs.com/package/@treekit/core)
+[![@treekit/react](https://img.shields.io/npm/v/@treekit/react?label=%40treekit%2Freact&color=2f4fe0)](https://www.npmjs.com/package/@treekit/react)
+[![@treekit/angular](https://img.shields.io/npm/v/@treekit/angular?label=%40treekit%2Fangular&color=2f4fe0)](https://www.npmjs.com/package/@treekit/angular)
+[![CI](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml/badge.svg)](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml)
+[![core size](https://img.shields.io/bundlephobia/minzip/@treekit/core?label=core%20min%2Bgzip)](https://bundlephobia.com/package/@treekit/core)
+[![dependencies](https://img.shields.io/badge/dependencies-0-2f4fe0)](packages/core/package.json)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**[Live demo](https://constantine-24.github.io/treekit/)** · [React showcase](https://constantine-24.github.io/treekit/react/) · [Angular showcase](https://constantine-24.github.io/treekit/angular/) · [Docs](#documentation) · [Contributing](CONTRIBUTING.md)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-dark.png">
+  <img src="docs/images/demo.png" alt="The treekit landing page: a headline beside a live tree of 10,001 nodes, of which 18 rows are in the DOM" width="880">
+</picture>
+
+</div>
+
+## Why treekit?
+
+Most tree widgets bolt drag-and-drop onto a flow-layout list, and that falls apart once the list is virtualized: placeholder rows shift absolutely positioned siblings, indices lie, and drop feedback flickers. treekit starts from the other end — **rows are positioned by a virtualizer, and every drop is resolved from the pointer position against the rendered rows.** Nothing is ever inserted into the layout; a single insertion line or folder highlight is drawn on top.
+
+- **Virtualized** — only the visible rows exist in the DOM; 10,000+ nodes stay smooth. Fixed heights built in, measured rows through TanStack Virtual.
+- **Native HTML5 drag-and-drop** — reorder, drop into folders, and accept drags from outside the tree (plain `draggable` + `dataTransfer`), with `into` / `before` / `after` intent, edge auto-scroll and spring-loaded folders.
+- **Keyboard drag-and-drop** — every pointer operation has a keyboard equivalent (grab → move → drop) that emits the same events, with screen-reader announcements. It is the supported path on touch.
+- **Multi-select** — click, ⌃/⌘-click, Shift-click, Shift+arrows and select-all, with drags that carry the whole selection, normalized to document order and de-nested.
+- **Filtering & lazy loading** — filters keep the ancestors of every match without touching expansion state; folders can load their children on demand.
+- **Headless and zero-dependency** — five independent layers that work against plain DOM. The core never mutates your data on drop: it reports a `DropEvent`, and your code decides.
+- **Accessible** — WAI-ARIA tree semantics with `aria-activedescendant`; the demos score 100 in Lighthouse accessibility.
 
 ## Packages
 
-| Package                                | Description                                                                  |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| [`@treekit/core`](packages/core)       | Zero-dependency headless engine: tree state, virtualization, DnD, keyboard.  |
-| [`@treekit/angular`](packages/angular) | Angular component (`<tk-tree>`) over the core. No Material / CDK dependency. |
+| Package                                                        | What it is                                                                           |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [`@treekit/core`](packages/core#readme)                        | The headless engine: tree state, virtualization, drag-and-drop, keyboard, selection. |
+| [`@treekit/react`](packages/react#readme)                      | `<TkTree>` for React 18 and 19.                                                      |
+| [`@treekit/angular`](packages/angular/projects/treekit#readme) | `<tk-tree>` for Angular 22+. No Material or CDK dependency.                          |
 
-## Features
+The two adapters have the same features, the same markup and the same `--tk-*` theming tokens.
 
-- **Virtualized** — renders only visible rows; 10,000+ nodes stay smooth.
-- **Native HTML5 drag-and-drop** — in-tree reorder, drop-into-folder, and external drag sources via
-  plain `draggable` + `dataTransfer`. Cross-tree and cross-window drags work for free.
-- **Precise drop feedback** — pointer-position hit-testing, `into`/`before`/`after` intent (folder
-  middle 50% = into), explicit insertion line, edge auto-scroll during drag.
-- **Multi-select and multi-node drag** — ctrl/cmd-click, shift-click ranges, `Ctrl/Cmd+A`, and a
-  drag that carries the whole selection. Payloads are normalized: document order, de-duplicated,
-  and de-nested so a folder never moves alongside its own descendants.
-- **Keyboard-accessible DnD** — every pointer drag operation has a keyboard equivalent
-  (grab → move → drop) emitting the same events; `role=tree` semantics and live-region announcements.
-- **Filtering** — predicate-based; reveals matches plus their ancestors, auto-expanded; restores
-  expansion state when cleared; drag stays enabled while filtered.
-- **Lazy loading** — expandable nodes without children request them on first expand.
-- **Headless** — the core has no framework, no RxJS, no DOM framework assumptions beyond the
-  standard DOM APIs. Bring your own rendering, or use the Angular adapter.
+## Installation
+
+```bash
+npm install @treekit/core @treekit/react     # React
+npm install @treekit/core @treekit/angular   # Angular
+npm install @treekit/core                    # anything else
+```
+
+| Peer dependency           | Needed by                                                    |
+| ------------------------- | ------------------------------------------------------------ |
+| `react`, `react-dom`      | `@treekit/react` (`^18 \|\| ^19`)                            |
+| `@angular/core`, `common` | `@treekit/angular` (`>=22`)                                  |
+| `@tanstack/virtual-core`  | optional — only for measured rows (`@treekit/core/tanstack`) |
 
 ## Quick start
 
-Angular:
+Each adapter renders a `TreeState` you own, and reports drops for you to apply.
+
+### React
+
+```tsx
+import { TreeState } from '@treekit/core';
+import { TkTree } from '@treekit/react';
+import '@treekit/react/styles.css';
+import { useState } from 'react';
+
+export function FileTree() {
+  const [state] = useState(() => {
+    const tree = new TreeState<{ size: number }>();
+    tree.setSource([
+      {
+        id: 'src',
+        name: 'src',
+        item: { size: 0 },
+        isFolder: true,
+        children: [{ id: 'main', name: 'main.ts', item: { size: 812 } }],
+      },
+      { id: 'readme', name: 'README.md', item: { size: 2048 } },
+    ]);
+    return tree;
+  });
+
+  return (
+    <div style={{ height: 400 }}>
+      <TkTree
+        state={state}
+        ariaLabel="Files"
+        // The tree only reports the drop; your code applies it.
+        onDrop={drop => {
+          if (drop.target) state.moveMany([...drop.nodes], drop.target);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Angular
 
 ```ts
-import { TkTree, TkTreeNodeDef } from '@treekit/angular';
-import { TreeState } from '@treekit/core';
+import { Component } from '@angular/core';
+import { TkTree } from '@treekit/angular';
+import { DropEvent, TreeState } from '@treekit/core';
 
 @Component({
-  imports: [TkTree, TkTreeNodeDef],
+  selector: 'app-file-tree',
+  imports: [TkTree],
   template: `
-    <tk-tree [state]="state" [rowHeight]="28" (dropped)="onDrop($event)">
-      <ng-template tkTreeNodeDef let-node>{{ node.name }}</ng-template>
-    </tk-tree>
+    <tk-tree [state]="state" ariaLabel="Files" (dropped)="onDrop($event)" style="height: 400px" />
   `,
 })
-export class Explorer {
-  state = new TreeState<MyItem>();
+export class FileTree {
+  readonly state = new TreeState<{ size: number }>();
 
-  onDrop(drop: DropEvent<MyItem>): void {
-    if (drop.node && drop.target) {
-      this.state.move(drop.node, drop.target);
-    }
+  constructor() {
+    this.state.setSource([
+      {
+        id: 'src',
+        name: 'src',
+        item: { size: 0 },
+        isFolder: true,
+        children: [{ id: 'main', name: 'main.ts', item: { size: 812 } }],
+      },
+      { id: 'readme', name: 'README.md', item: { size: 2048 } },
+    ]);
+  }
+
+  // The tree only reports the drop; your code applies it.
+  onDrop(drop: DropEvent<{ size: number }>): void {
+    if (drop.target) this.state.moveMany([...drop.nodes], drop.target);
   }
 }
 ```
 
-Any framework (or none) — the same engine against plain DOM:
+### Any framework, or none
+
+The core attaches to plain DOM. Rows can render however you like — the engines only need absolutely positioned row elements carrying `data-node-id`:
 
 ```ts
-import { DndEngine, FixedHeightVirtualizer, TreeState } from '@treekit/core';
+import {
+  DndEngine,
+  DropEvent,
+  FixedHeightVirtualizer,
+  KeyboardController,
+  TreeState,
+} from '@treekit/core';
 
-const state = new TreeState<MyItem>();
-state.setSource(myRoots);
+const state = new TreeState<null>();
+state.setSource(roots);
+
+const onDrop = (drop: DropEvent<null>) => {
+  if (drop.target) state.moveMany([...drop.nodes], drop.target);
+};
+const canDropAt = state.canMoveMany.bind(state);
 
 const virtualizer = new FixedHeightVirtualizer({ rowHeight: 28 });
-const engine = new DndEngine<MyItem>({
+const dnd = new DndEngine({
   getVisibleNodes: () => state.visibleNodes(),
-  onDrop: drop => drop.target && state.moveMany([...drop.nodes], drop.target),
-  canDropAt: (nodes, target) => state.canMoveMany(nodes, target),
+  onDrop,
+  canDropAt,
+  onStateChange: render,
 });
+const keyboard = new KeyboardController({ state, onDrop, canDropAt, onStateChange: render });
 
-state.subscribe(render);
-virtualizer.attach(viewport, render);
-engine.attach(viewport, content);
+state.subscribe(() => {
+  virtualizer.setCount(state.visibleNodes().length);
+  render();
+});
+virtualizer.attach(viewport, render); // render() draws virtualizer.items() into `content`
+dnd.attach(viewport, content);
+viewport.addEventListener(
+  'keydown',
+  event => keyboard.handleKeyDown(event) && event.preventDefault()
+);
 ```
 
-See the runnable demos. [`apps/demo-angular`](apps/demo-angular) is the showcase — 10k nodes,
-multi-select, palette drag, filtering, a lazy branch, spring-loaded folders, and a virtualizer
-toggle — and it reports the library's own drop arithmetic live: hover a row mid-drag and it draws
-the 0.25 / 0.5 / 0.75 intent bands while printing the pointer fraction and the `resolveDropIntent`
-call that produced the result. [`apps/demo-vanilla`](apps/demo-vanilla) is the headless proof, the
-same engine against plain DOM in under 7 kB gzipped.
+The complete version of this snippet is on the [landing page](https://constantine-24.github.io/treekit/#code), and [`apps/demo-vanilla`](apps/demo-vanilla) is a full plain-DOM app.
 
-```sh
-cd apps/demo-angular && pnpm start   # http://localhost:4200
+## How it works
+
+```mermaid
+flowchart LR
+  subgraph core["@treekit/core — five independent layers"]
+    S[TreeState<br/>forest · visible list · mutations · filter · lazy load]
+    V[TreeVirtualizer<br/>fixed height · TanStack]
+    D[DndEngine<br/>pointer drag-and-drop]
+    K[KeyboardController<br/>ARIA navigation · keyboard DnD]
+    M[SelectionModel<br/>multi-select by id]
+  end
+  D -- DropEvent --> App[Your code]
+  K -- DropEvent --> App
+  App -- "move / add / expand" --> S
+  core --- R["@treekit/react"]
+  core --- A["@treekit/angular"]
 ```
 
-## Rules & limitations (read before adopting)
+The layers share no state — only `TreeNode` identity and the `data-node-id` attribute — so each can be used alone. Both engines emit the same `DropEvent`, and neither ever mutates the tree: `canDropAt` decides what may light up, and your `onDrop` decides what happens. Architecture notes for contributors live in [`.claude/rules/architecture.md`](.claude/rules/architecture.md) and [`packages/core/CLAUDE.md`](packages/core/CLAUDE.md).
 
-- **Native HTML5 DnD does not fire from touch gestures on Android Chrome.** Desktop, mouse, and pen
-  work everywhere; iOS Safari supports native DnD. The keyboard DnD mode is the supported fallback
-  on touch devices.
-- The built-in virtualizer assumes a **fixed row height** (configurable). Variable / measured row
-  heights are supported through the optional `@treekit/core/tanstack` adapter, which requires
-  installing `@tanstack/virtual-core`.
-- The tree **owns its scroll viewport**. There is no window-scroll / scroll-margin mode.
-- **Enabling multi-select changes one keybinding.** `Space` becomes "toggle selection" and
-  `Ctrl/Cmd+Space` becomes "grab for keyboard drag". Without multi-select, `Space` still grabs.
-  Every unambiguous alternative chord collides with a browser or OS shortcut.
-- Selection is **explicit**: selecting a folder does not select its descendants. A move already
-  relocates the whole subtree, so implying descendants would ask to move them twice over. Use the
-  exported `denestNodes` if you need the same normalization for a bulk action of your own.
-- RTL layouts are untested in v1.
+## Documentation
 
-## Development
+- **[@treekit/core](packages/core#readme)** — the layers, the drop model, virtualizers, and the full API list.
+- **[@treekit/react](packages/react#readme)** — props, callbacks, render props, the imperative handle, theming.
+- **[@treekit/angular](packages/angular/projects/treekit#readme)** — inputs, outputs, templates, the imperative API, theming.
+- **Showcases** — the [React](https://constantine-24.github.io/treekit/react/) and [Angular](https://constantine-24.github.io/treekit/angular/) instrument panels run 10,000 rows with multi-select, palette drags, filtering, a lazy branch and spring loading, and draw the library's own drop arithmetic live (`resolveDropIntent`) as you hover mid-drag. Their sources are [`apps/demo-react`](apps/demo-react) and [`apps/demo-angular`](apps/demo-angular).
 
-```sh
-corepack enable pnpm
-pnpm install
-pnpm build     # build all packages
-pnpm test      # run all test suites
-pnpm lint
+## Compatibility
+
+| Package            | Requires                                                 |
+| ------------------ | -------------------------------------------------------- |
+| `@treekit/core`    | Any evergreen browser (ES2022). No runtime dependencies. |
+| `@treekit/react`   | React 18 or 19. Client component (`'use client'`).       |
+| `@treekit/angular` | Angular 22+, standalone, zoneless-ready.                 |
+
+## Limitations
+
+Read these before adopting:
+
+- **Native HTML5 drag-and-drop does not fire from touch gestures on Android Chrome.** Desktop, mouse and pen work everywhere, and iOS Safari supports native DnD. Keyboard drag-and-drop is the supported fallback on touch.
+- The built-in virtualizer assumes a **fixed row height**. Variable heights need `TanStackVirtualizer` from `@treekit/core/tanstack` (install `@tanstack/virtual-core`); both adapters then measure rows automatically.
+- The tree **owns its scroll viewport** — there is no window-scroll mode.
+- **Enabling multi-select changes one key**: `Space` toggles selection and `Ctrl/Cmd+Space` grabs a row for keyboard drag. Without multi-select, `Space` grabs. Every unambiguous alternative chord collides with a browser or OS shortcut.
+- Selection is **explicit**: selecting a folder does not select its descendants, because a move already relocates the whole subtree.
+- **RTL** layouts are untested.
+
+## Contributing
+
+Bug reports and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). In short:
+
+```bash
+corepack enable && pnpm install
+pnpm build && pnpm test
+pnpm --filter site dev    # the landing page, live against the library sources
 ```
 
-Releases are versioned with [Changesets](https://github.com/changesets/changesets).
+Releases are automated with [Changesets](https://github.com/changesets/changesets) and published to npm with provenance.
 
 ## License
 
-MIT
+[MIT](LICENSE) © Konstantin Penzin
