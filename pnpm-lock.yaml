@@ -45,8 +45,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
       '@tanstack/virtual-core':
-        specifier: ^3.13.0
-        version: 3.17.4
+        specifier: ^3.19.6
+        version: 3.19.6
       demo-shared:
         specifier: workspace:*
         version: link:../demo-shared
@@ -97,8 +97,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/react
       '@tanstack/virtual-core':
-        specifier: ^3.13.0
-        version: 3.17.4
+        specifier: ^3.19.6
+        version: 3.19.6
       demo-shared:
         specifier: workspace:*
         version: link:../demo-shared
@@ -156,8 +156,8 @@ importers:
         version: link:../../packages/core
     devDependencies:
       '@tanstack/virtual-core':
-        specifier: ^3.13.0
-        version: 3.17.4
+        specifier: ^3.19.6
+        version: 3.19.6
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0(supports-color@8.1.1)
@@ -209,8 +209,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@tanstack/virtual-core':
-        specifier: ^3.13.0
-        version: 3.17.4
+        specifier: ^3.19.6
+        version: 3.19.6
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.2
@@ -319,8 +319,8 @@ importers:
         specifier: ^9.30.0
         version: 9.39.5
       '@tanstack/virtual-core':
-        specifier: ^3.13.0
-        version: 3.17.4
+        specifier: ^3.19.6
+        version: 3.19.6
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.1
@@ -2197,8 +2197,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tanstack/virtual-core@3.17.4':
-    resolution: {integrity: sha512-nGm5KteqxasUdThLc2izl6dHUqLv0LQj7Nuyo5gYalTPf/U8a9ermvsl7reT+6ioBW1l8WfpP/mcU338nLXpqw==}
+  '@tanstack/virtual-core@3.19.6':
+    resolution: {integrity: sha512-CsTW892z23gy7IyxYTTorVu1uZWB+0N349rSMgKz4rFLPpLza7F7TpcCKeI5iUAwYQCt8QUlOU67J+KXCxtpGw==}
 
   '@testing-library/dom@10.4.2':
     resolution: {integrity: sha512-yzr2S9HyAIdhz2/6qHgbs665Q7PKVcDF05vsOlHPxG1mo36gKVesdYVeDLnXgfjJ03CrKRk08knc6+E/9m8v2Q==}
@@ -6312,7 +6312,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tanstack/virtual-core@3.17.4': {}
+  '@tanstack/virtual-core@3.19.6': {}
 
   '@testing-library/dom@10.4.2':
     dependencies:

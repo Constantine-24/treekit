@@ -17,7 +17,7 @@
     "@constantine-24/treekit-core": "workspace:*"
   },
   "devDependencies": {
-    "@tanstack/virtual-core": "^3.13.0",
+    "@tanstack/virtual-core": "^3.19.6",
     "jsdom": "^26.0.0",
     "typescript": "^5.8.0",
     "vitest": "^3.2.0"

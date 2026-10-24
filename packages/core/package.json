@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.30.0",
-    "@tanstack/virtual-core": "^3.13.0",
+    "@tanstack/virtual-core": "^3.19.6",
     "@types/node": "^22.0.0",
     "eslint": "^9.30.0",
     "jsdom": "^26.0.0",
