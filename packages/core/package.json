@@ -3,10 +3,15 @@
   "version": "0.0.0",
   "description": "Headless virtualized tree engine with native HTML5 drag-and-drop: tree state, virtualization, DnD, keyboard accessibility. Zero dependencies.",
   "license": "MIT",
+  "author": "Konstantin Penzin",
+  "homepage": "https://constantine-24.github.io/treekit/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kpenzin/treekit.git",
+    "url": "git+https://github.com/Constantine-24/treekit.git",
     "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/Constantine-24/treekit/issues"
   },
   "keywords": [
     "tree",
@@ -16,12 +21,18 @@
     "virtualized",
     "virtual-scroll",
     "headless",
-    "accessibility"
+    "accessibility",
+    "framework-agnostic",
+    "react",
+    "angular",
+    "vanilla",
+    "tree-view"
   ],
   "type": "module",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {
@@ -63,5 +74,8 @@
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.35.0",
     "vitest": "^3.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
