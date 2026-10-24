@@ -7,7 +7,7 @@ description: Run every gate plus the package-tarball check before a release PR m
 Verify that `main` (or the Version Packages PR branch) is releasable, following `.claude/rules/release.md`. **Never publish, tag or push** — a hook blocks publish commands anyway.
 
 1. **Preconditions.** `git status --porcelain` is empty. Report the branch and `git log -1 --oneline`.
-2. **Pending changesets.** List `.changeset/*.md` (excluding `README.md`) with their packages and bump levels. On a Version Packages branch there should be none left, and each package's `CHANGELOG.md` should have the new version at the top.
+2. **Pending changesets.** Run `pnpm changeset status --verbose` and report the planned versions: all three `@treekit/*` packages must land on the **same** version, and nothing may jump to `1.0.0` by accident (see the peer-range note in `release.md`). List `.changeset/*.md` (excluding `README.md`) with their packages and bump levels. On a Version Packages branch there should be none left, and each package's `CHANGELOG.md` should have the new version at the top.
 3. **Gates** (stop at the first failure and report it verbatim):
    1. `pnpm install --frozen-lockfile`
    2. `pnpm format:check`

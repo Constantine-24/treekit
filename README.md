@@ -51,6 +51,8 @@ npm install @treekit/core @treekit/angular   # Angular
 npm install @treekit/core                    # anything else
 ```
 
+Keep every `@treekit/*` package on the same version — they are released in lockstep.
+
 | Peer dependency           | Needed by                                                    |
 | ------------------------- | ------------------------------------------------------------ |
 | `react`, `react-dom`      | `@treekit/react` (`^18 \|\| ^19`)                            |
@@ -69,9 +71,13 @@ import { TkTree } from '@treekit/react';
 import '@treekit/react/styles.css';
 import { useState } from 'react';
 
+interface FileItem {
+  size: number;
+}
+
 export function FileTree() {
   const [state] = useState(() => {
-    const tree = new TreeState<{ size: number }>();
+    const tree = new TreeState<FileItem>();
     tree.setSource([
       {
         id: 'src',
@@ -107,6 +113,10 @@ import { Component } from '@angular/core';
 import { TkTree } from '@treekit/angular';
 import { DropEvent, TreeState } from '@treekit/core';
 
+interface FileItem {
+  size: number;
+}
+
 @Component({
   selector: 'app-file-tree',
   imports: [TkTree],
@@ -115,7 +125,7 @@ import { DropEvent, TreeState } from '@treekit/core';
   `,
 })
 export class FileTree {
-  readonly state = new TreeState<{ size: number }>();
+  readonly state = new TreeState<FileItem>();
 
   constructor() {
     this.state.setSource([
@@ -131,7 +141,7 @@ export class FileTree {
   }
 
   // The tree only reports the drop; your code applies it.
-  onDrop(drop: DropEvent<{ size: number }>): void {
+  onDrop(drop: DropEvent<FileItem>): void {
     if (drop.target) this.state.moveMany([...drop.nodes], drop.target);
   }
 }
