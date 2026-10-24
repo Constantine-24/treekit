@@ -1,5 +1,5 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
-import type { TreeNode } from '@treekit/core';
+import type { TreeNode } from '@constantine-24/treekit-core';
 
 /** Template context available inside `ng-template[tkTreeNodeDef]`. */
 export interface TkTreeNodeDefContext<T> {

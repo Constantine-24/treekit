@@ -1,5 +1,5 @@
 {
-  "name": "@treekit/demo-shared",
+  "name": "demo-shared",
   "version": "0.0.0",
   "private": true,
   "description": "Source-only fixtures, theme and behaviour shared by apps/demo-react, apps/demo-angular and apps/site, so the two showcases stay identical.",
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@treekit/core": "workspace:*"
+    "@constantine-24/treekit-core": "workspace:*"
   },
   "devDependencies": {
     "@tanstack/virtual-core": "^3.13.0",

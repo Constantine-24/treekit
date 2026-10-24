@@ -18,14 +18,16 @@
      * dev server neither watches nor rebuilds them, so every library edit is
      * silently stale in the demo until you rebuild and restart — which is how
      * the "tree renders blank" bug hid for so long. Packaging is still verified
-     * by `pnpm build` in CI, and demo-vanilla still consumes @treekit/core
+     * by `pnpm build` in CI, and demo-vanilla still consumes @constantine-24/treekit-core
      * through its published `exports` map.
      */
     "paths": {
-      "@treekit/angular": ["../../packages/angular/projects/treekit/src/public-api.ts"],
-      "@treekit/core": ["../../packages/core/src/index.ts"],
-      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"],
-      "@treekit/demo-shared": ["../demo-shared/src/index.ts"]
+      "@constantine-24/treekit-angular": [
+        "../../packages/angular/projects/treekit/src/public-api.ts"
+      ],
+      "@constantine-24/treekit-core": ["../../packages/core/src/index.ts"],
+      "@constantine-24/treekit-core/tanstack": ["../../packages/core/src/tanstack.ts"],
+      "demo-shared": ["../demo-shared/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

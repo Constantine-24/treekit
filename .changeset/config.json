@@ -2,7 +2,13 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [["@treekit/core", "@treekit/angular", "@treekit/react"]],
+  "fixed": [
+    [
+      "@constantine-24/treekit-core",
+      "@constantine-24/treekit-angular",
+      "@constantine-24/treekit-react"
+    ]
+  ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",

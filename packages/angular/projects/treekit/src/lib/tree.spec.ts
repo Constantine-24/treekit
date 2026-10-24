@@ -7,7 +7,7 @@ import {
   TreeState,
   TreeVirtualizer,
   VirtualItem,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 
 import { TkTree } from './tree';
 import { TkTreeNodeDef } from './tree-node-def';

@@ -1,5 +1,5 @@
 /*
- * Public API Surface of @treekit/angular
+ * Public API Surface of @constantine-24/treekit-angular
  */
 
 export * from './lib/tree';

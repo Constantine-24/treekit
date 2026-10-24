@@ -1,4 +1,4 @@
-# `@treekit/angular` — internals
+# `@constantine-24/treekit-angular` — internals
 
 A standalone Angular CLI workspace (`angular.json`, project `treekit`) holding the publishable library at `projects/treekit/`. It is on its **own TypeScript version** (~6.0) and does not extend the root `tsconfig.base.json`. It has no ESLint config yet (`BACKLOG.md`). Prettier resolves `.prettierrc` here (defaults + the `angular` HTML parser), so this code writes `(node) => ...`.
 
@@ -21,5 +21,5 @@ Notable patterns, all load-bearing:
 
 - `ng test` only — never `vitest` directly here (a hook blocks it). `pnpm ng test --include 'src/lib/tree.spec.ts' --filter '<regex>'`.
 - The spec uses a `StubVirtualizer` that renders every row. Keep at least one `await fixture.whenStable()` path with no manual `detectChanges()` (see `.claude/rules/testing.md`).
-- `ng test` and `ng build treekit` resolve `@treekit/core` from `packages/core/dist` — build core first.
+- `ng test` and `ng build treekit` resolve `@constantine-24/treekit-core` from `packages/core/dist` — build core first.
   </important>

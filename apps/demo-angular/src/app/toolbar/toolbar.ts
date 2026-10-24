@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { FEATURE_TOGGLES, FeatureToggleKey } from '@treekit/demo-shared';
+import { FEATURE_TOGGLES, FeatureToggleKey } from 'demo-shared';
 
 /** Filter, expand/collapse all, and the feature switches. */
 @Component({

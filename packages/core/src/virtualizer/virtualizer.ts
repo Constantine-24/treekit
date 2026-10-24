@@ -15,7 +15,7 @@ export interface VirtualItem {
  * (positioning, insertion lines, auto-scroll math) must flow through
  * `items()`' `start`/`size` — never `index × rowHeight` — so implementations
  * with measured rows work without any consumer change. The built-in
- * `FixedHeightVirtualizer` is dependency-free; `@treekit/core/tanstack`
+ * `FixedHeightVirtualizer` is dependency-free; `@constantine-24/treekit-core/tanstack`
  * provides measured rows via the optional `@tanstack/virtual-core` peer.
  */
 export interface TreeVirtualizer {

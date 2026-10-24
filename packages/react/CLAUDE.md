@@ -1,6 +1,6 @@
-# `@treekit/react` — internals
+# `@constantine-24/treekit-react` — internals
 
-`src/tree.tsx` is the React twin of the Angular `TkTree` (`packages/angular/projects/treekit/src/lib/tree.ts`) and is **deliberately thin**: same props (as React-named callbacks), same DOM, same classes, same ARIA. Keep them in parity (`.claude/rules/architecture.md`). Built with tsup (ESM + CJS + d.ts, `'use client'` banner); `src/tree.css` is copied to `dist/styles.css` and exported as `@treekit/react/styles.css`.
+`src/tree.tsx` is the React twin of the Angular `TkTree` (`packages/angular/projects/treekit/src/lib/tree.ts`) and is **deliberately thin**: same props (as React-named callbacks), same DOM, same classes, same ARIA. Keep them in parity (`.claude/rules/architecture.md`). Built with tsup (ESM + CJS + d.ts, `'use client'` banner); `src/tree.css` is copied to `dist/styles.css` and exported as `@constantine-24/treekit-react/styles.css`.
 
 Peers: `react` / `react-dom` `^18 || ^19`. Don't use React-19-only APIs (`ref` as a plain prop, `use`, `useEffectEvent`) in the library — `forwardRef` stays until the React 18 peer is dropped.
 
@@ -25,5 +25,5 @@ Each load-bearing Angular pattern has a React counterpart. Keep all of them:
 - The spec mirrors `packages/angular/projects/treekit/src/lib/tree.spec.ts` scenario-for-scenario with a `StubVirtualizer` that renders every row. A new adapter scenario goes into both.
 - Keep the spec that mutates `TreeState` **outside** `act()` and awaits `findBy*` — it is the only one that proves the external-store subscription re-renders on its own (the blank-render guard).
 - `src/styles.spec.ts` compares the `--tk-*` tokens and `tk-*` classes of `tree.css` with the Angular `tree.scss`.
-- Tests and builds resolve `@treekit/core` from `packages/core/dist` — build core first.
+- Tests and builds resolve `@constantine-24/treekit-core` from `packages/core/dist` — build core first.
   </important>

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { KEY_LEGEND } from '@treekit/demo-shared';
+import { KEY_LEGEND } from 'demo-shared';
 
 /** The multi-select key bindings. */
 @Component({

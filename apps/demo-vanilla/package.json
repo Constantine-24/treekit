@@ -9,7 +9,7 @@
     "test": "tsc --noEmit"
   },
   "dependencies": {
-    "@treekit/core": "workspace:*"
+    "@constantine-24/treekit-core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.0",

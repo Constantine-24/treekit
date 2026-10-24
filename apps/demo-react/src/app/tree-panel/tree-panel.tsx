@@ -1,4 +1,4 @@
-import { DropEvent, TreeNode, TreeState, TreeVirtualizer } from '@treekit/core';
+import { DropEvent, TreeNode, TreeState, TreeVirtualizer } from '@constantine-24/treekit-core';
 import {
   DemoItem,
   DropProbe,
@@ -7,8 +7,8 @@ import {
   probeDrop,
   ROW_HEIGHT,
   SPRING_LOAD_DELAY,
-} from '@treekit/demo-shared';
-import { TkTree, TkTreeHandle } from '@treekit/react';
+} from 'demo-shared';
+import { TkTree, TkTreeHandle } from '@constantine-24/treekit-react';
 import { ReactElement, Ref, useEffect, useImperativeHandle, useRef } from 'react';
 
 /** Imperative API of the panel, forwarded to the tree's own handle. */

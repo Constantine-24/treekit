@@ -1,10 +1,10 @@
-# @treekit/angular
+# @constantine-24/treekit-angular
 
-[![npm](https://img.shields.io/npm/v/@treekit/angular?color=2f4fe0)](https://www.npmjs.com/package/@treekit/angular)
+[![npm](https://img.shields.io/npm/v/@constantine-24/treekit-angular?color=2f4fe0)](https://www.npmjs.com/package/@constantine-24/treekit-angular)
 [![CI](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml/badge.svg)](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml)
-[![license](https://img.shields.io/npm/l/@treekit/angular)](https://github.com/Constantine-24/treekit/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/@constantine-24/treekit-angular)](https://github.com/Constantine-24/treekit/blob/main/LICENSE)
 
-`<tk-tree>` — a virtualized Angular tree with native HTML5 drag-and-drop, keyboard-accessible drag-and-drop, multi-select, filtering and lazy loading, built on the headless [`@treekit/core`](https://www.npmjs.com/package/@treekit/core). Standalone, zoneless-ready, no Material or CDK dependency. Its React twin is [`@treekit/react`](https://www.npmjs.com/package/@treekit/react).
+`<tk-tree>` — a virtualized Angular tree with native HTML5 drag-and-drop, keyboard-accessible drag-and-drop, multi-select, filtering and lazy loading, built on the headless [`@constantine-24/treekit-core`](https://www.npmjs.com/package/@constantine-24/treekit-core). Standalone, zoneless-ready, no Material or CDK dependency. Its React twin is [`@constantine-24/treekit-react`](https://www.npmjs.com/package/@constantine-24/treekit-react).
 
 **[Angular showcase](https://constantine-24.github.io/treekit/angular/)** · [Landing page](https://constantine-24.github.io/treekit/) · [Repository](https://github.com/Constantine-24/treekit)
 
@@ -13,7 +13,7 @@
 ## Installation
 
 ```bash
-npm install @treekit/core @treekit/angular
+npm install @constantine-24/treekit-core @constantine-24/treekit-angular
 ```
 
 Requires Angular 22 or later. For measured (variable-height) rows, also install `@tanstack/virtual-core`.
@@ -22,8 +22,8 @@ Requires Angular 22 or later. For measured (variable-height) rows, also install 
 
 ```ts
 import { Component } from '@angular/core';
-import { TkTree, TkTreeNodeDef } from '@treekit/angular';
-import { DropEvent, TreeState } from '@treekit/core';
+import { TkTree, TkTreeNodeDef } from '@constantine-24/treekit-angular';
+import { DropEvent, TreeState } from '@constantine-24/treekit-core';
 
 @Component({
   selector: 'app-explorer',
@@ -55,9 +55,9 @@ export class Explorer {
 }
 ```
 
-- You own the `TreeState` — filtering, lazy loading and mutations are [core](https://www.npmjs.com/package/@treekit/core) calls, and the tree re-renders on every change.
+- You own the `TreeState` — filtering, lazy loading and mutations are [core](https://www.npmjs.com/package/@constantine-24/treekit-core) calls, and the tree re-renders on every change.
 - `<tk-tree>` owns its scroll viewport, so give it a height.
-- Variable row heights: pass a `TanStackVirtualizer` (from `@treekit/core/tanstack`) to `[virtualizer]`; rows measure themselves.
+- Variable row heights: pass a `TanStackVirtualizer` (from `@constantine-24/treekit-core/tanstack`) to `[virtualizer]`; rows measure themselves.
 
 ## Inputs
 
@@ -122,7 +122,7 @@ Get the component with `viewChild(TkTree)`: `expandAll()`, `collapseAll()`, and 
 
 ## Theming
 
-Row height and indentation are inputs (`rowHeight`, `indentWidth`); everything else is a CSS custom property set on `tk-tree` or any ancestor, each with a working fallback. `@treekit/react` uses the same properties.
+Row height and indentation are inputs (`rowHeight`, `indentWidth`); everything else is a CSS custom property set on `tk-tree` or any ancestor, each with a working fallback. `@constantine-24/treekit-react` uses the same properties.
 
 | Property                     | Applies to                                     |
 | ---------------------------- | ---------------------------------------------- |

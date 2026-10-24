@@ -1,4 +1,4 @@
-import { FEATURE_TOGGLES, FeatureToggleKey } from '@treekit/demo-shared';
+import { FEATURE_TOGGLES, FeatureToggleKey } from 'demo-shared';
 import { ReactElement } from 'react';
 
 export interface ToolbarProps {

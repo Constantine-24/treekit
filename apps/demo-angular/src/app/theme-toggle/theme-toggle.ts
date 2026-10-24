@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { applyTheme, currentTheme, restoreTheme, Theme } from '@treekit/demo-shared';
+import { applyTheme, currentTheme, restoreTheme, Theme } from 'demo-shared';
 
 /** Light/dark switch. Follows the OS until clicked; the choice is shared with the other apps. */
 @Component({

@@ -2,7 +2,7 @@
 
 These are deliberate v1 boundaries. Changing any of them is a design decision that needs a plan, not a drive-by fix.
 
-- **Fixed row height in the built-in virtualizer.** Variable heights need `TanStackVirtualizer` (`@treekit/core/tanstack`) plus row measurement (`TkTreeRowMeasure` in Angular; built into `<TkTree>` in React when the virtualizer has `measure`).
+- **Fixed row height in the built-in virtualizer.** Variable heights need `TanStackVirtualizer` (`@constantine-24/treekit-core/tanstack`) plus row measurement (`TkTreeRowMeasure` in Angular; built into `<TkTree>` in React when the virtualizer has `measure`).
 - **The tree owns its scroll viewport** — no window-scroll mode.
 - **RTL is untested.**
 - **Native HTML5 DnD does not fire from touch gestures on Android Chrome** — keyboard DnD is the supported fallback on touch.

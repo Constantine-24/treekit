@@ -1,4 +1,4 @@
-import { PALETTE_LABELS, startPaletteDrag } from '@treekit/demo-shared';
+import { PALETTE_LABELS, startPaletteDrag } from 'demo-shared';
 import { ReactElement } from 'react';
 
 /** External drag sources: plain `draggable` chips the tree accepts with no integration. */

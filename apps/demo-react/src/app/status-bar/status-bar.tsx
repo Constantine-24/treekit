@@ -1,4 +1,4 @@
-import { DropProbe, formatFraction } from '@treekit/demo-shared';
+import { DropProbe, formatFraction } from 'demo-shared';
 import { ReactElement } from 'react';
 
 /**

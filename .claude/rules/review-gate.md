@@ -19,7 +19,7 @@ The review gate is **`/pr-review-toolkit:review-pr`** (requires the `pr-review-t
 These are blocking, specific to this project, and can't be deferred to a follow-up PR.
 
 - **Public API discipline.** No unintended change to anything exported from a package entry point, or to any selector, input, output, prop, CSS class or `--tk-*` property. Intended changes have TSDoc, a changeset, README updates, and — if breaking — a `!` commit.
-- **The core stays headless.** `@treekit/core` imports no framework and no runtime dependency; `@tanstack/virtual-core` is imported only from `src/tanstack.ts`.
+- **The core stays headless.** `@constantine-24/treekit-core` imports no framework and no runtime dependency; `@tanstack/virtual-core` is imported only from `src/tanstack.ts`.
 - **The core never mutates on drop.** Engines report through `onDrop` / `onSpringLoad`; only consumer or adapter code calls `move` / `add` / `expand`.
 - **Geometry contract.** No `index × rowHeight` outside `FixedHeightVirtualizer`; a new virtualizer is in the conformance suite.
 - **Adapter parity.** A feature, fix, prop/input, class or token changed in one adapter is changed in the other, with a spec in both, or recorded in `BACKLOG.md` with the reason.

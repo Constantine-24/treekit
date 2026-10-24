@@ -23,21 +23,21 @@ pnpm --filter demo-angular start  # Angular showcase on http://localhost:4200
 
 ## Project layout
 
-| Path                                     | What                                                                        |
-| ---------------------------------------- | --------------------------------------------------------------------------- |
-| `packages/core/`                         | `@treekit/core` — the headless, zero-dependency engine                      |
-| `packages/angular/projects/treekit`      | `@treekit/angular` — the Angular adapter (inside an Angular CLI workspace)  |
-| `packages/react/`                        | `@treekit/react` — the React adapter                                        |
-| `apps/site/`                             | The landing page, deployed to GitHub Pages                                  |
-| `apps/demo-react/`, `apps/demo-angular/` | Two mirrored showcases (shared fixtures and theme in `apps/demo-shared/`)   |
-| `apps/demo-vanilla/`                     | Plain-DOM usage of the core, built against the published package layout     |
-| `.claude/rules/`                         | Engineering rules — they apply to humans too. Read `architecture.md` first. |
+| Path                                     | What                                                                                      |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `packages/core/`                         | `@constantine-24/treekit-core` — the headless, zero-dependency engine                     |
+| `packages/angular/projects/treekit`      | `@constantine-24/treekit-angular` — the Angular adapter (inside an Angular CLI workspace) |
+| `packages/react/`                        | `@constantine-24/treekit-react` — the React adapter                                       |
+| `apps/site/`                             | The landing page, deployed to GitHub Pages                                                |
+| `apps/demo-react/`, `apps/demo-angular/` | Two mirrored showcases (shared fixtures and theme in `apps/demo-shared/`)                 |
+| `apps/demo-vanilla/`                     | Plain-DOM usage of the core, built against the published package layout                   |
+| `.claude/rules/`                         | Engineering rules — they apply to humans too. Read `architecture.md` first.               |
 
 ## Development loop
 
 ```bash
-pnpm --filter @treekit/core exec vitest run src/tree/tree-state.spec.ts   # scoped core tests
-pnpm --filter @treekit/react exec vitest run                              # React adapter tests
+pnpm --filter @constantine-24/treekit-core exec vitest run src/tree/tree-state.spec.ts   # scoped core tests
+pnpm --filter @constantine-24/treekit-react exec vitest run                              # React adapter tests
 (cd packages/angular && pnpm ng test --include 'src/lib/tree.spec.ts')    # Angular adapter tests
 pnpm test            # everything
 pnpm lint            # ESLint (core + react)

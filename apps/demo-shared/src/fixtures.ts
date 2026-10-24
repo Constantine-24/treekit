@@ -1,4 +1,4 @@
-import { TreeInput } from '@treekit/core';
+import { TreeInput } from '@constantine-24/treekit-core';
 
 /** Domain payload of every demo row. */
 export interface DemoItem {

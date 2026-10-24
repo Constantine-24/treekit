@@ -37,6 +37,6 @@ describe('site', () => {
     fireEvent.keyDown(react, { key: 'ArrowRight' });
 
     expect(screen.getByRole('tab', { name: 'Angular' }).getAttribute('aria-selected')).toBe('true');
-    expect(screen.getByRole('tabpanel').textContent).toContain('@treekit/angular');
+    expect(screen.getByRole('tabpanel').textContent).toContain('@constantine-24/treekit-angular');
   });
 });

@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { formatCount, GAUGES, GaugeKey } from '@treekit/demo-shared';
+import { formatCount, GAUGES, GaugeKey } from 'demo-shared';
 
 /** The rail's live counters: total, visible, rendered and selected rows. */
 @Component({

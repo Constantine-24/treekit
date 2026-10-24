@@ -1,10 +1,10 @@
-# @treekit/react
+# @constantine-24/treekit-react
 
-[![npm](https://img.shields.io/npm/v/@treekit/react?color=2f4fe0)](https://www.npmjs.com/package/@treekit/react)
+[![npm](https://img.shields.io/npm/v/@constantine-24/treekit-react?color=2f4fe0)](https://www.npmjs.com/package/@constantine-24/treekit-react)
 [![CI](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml/badge.svg)](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml)
-[![license](https://img.shields.io/npm/l/@treekit/react)](https://github.com/Constantine-24/treekit/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/@constantine-24/treekit-react)](https://github.com/Constantine-24/treekit/blob/main/LICENSE)
 
-`<TkTree>` — a virtualized React tree with native HTML5 drag-and-drop, keyboard-accessible drag-and-drop, multi-select, filtering and lazy loading, built on the headless [`@treekit/core`](https://www.npmjs.com/package/@treekit/core). For React 18 and 19. Its Angular twin is [`@treekit/angular`](https://www.npmjs.com/package/@treekit/angular).
+`<TkTree>` — a virtualized React tree with native HTML5 drag-and-drop, keyboard-accessible drag-and-drop, multi-select, filtering and lazy loading, built on the headless [`@constantine-24/treekit-core`](https://www.npmjs.com/package/@constantine-24/treekit-core). For React 18 and 19. Its Angular twin is [`@constantine-24/treekit-angular`](https://www.npmjs.com/package/@constantine-24/treekit-angular).
 
 **[React showcase](https://constantine-24.github.io/treekit/react/)** · [Landing page](https://constantine-24.github.io/treekit/) · [Repository](https://github.com/Constantine-24/treekit)
 
@@ -13,7 +13,7 @@
 ## Installation
 
 ```bash
-npm install @treekit/core @treekit/react
+npm install @constantine-24/treekit-core @constantine-24/treekit-react
 ```
 
 For measured (variable-height) rows, also install `@tanstack/virtual-core`.
@@ -21,9 +21,9 @@ For measured (variable-height) rows, also install `@tanstack/virtual-core`.
 ## Usage
 
 ```tsx
-import { TreeState } from '@treekit/core';
-import { TkTree } from '@treekit/react';
-import '@treekit/react/styles.css'; // once, anywhere in your app
+import { TreeState } from '@constantine-24/treekit-core';
+import { TkTree } from '@constantine-24/treekit-react';
+import '@constantine-24/treekit-react/styles.css'; // once, anywhere in your app
 import { useState } from 'react';
 
 export function Explorer() {
@@ -50,11 +50,11 @@ export function Explorer() {
 }
 ```
 
-- You own the `TreeState` — create it once (`useState(() => …)`), and call [core](https://www.npmjs.com/package/@treekit/core) methods to filter, load or mutate it. The tree subscribes and re-renders on every change; you don't need to copy anything into React state.
+- You own the `TreeState` — create it once (`useState(() => …)`), and call [core](https://www.npmjs.com/package/@constantine-24/treekit-core) methods to filter, load or mutate it. The tree subscribes and re-renders on every change; you don't need to copy anything into React state.
 - Inline callbacks are fine: the tree reads the latest props on every event and never re-attaches its engines (or drops focus and in-flight drags) because a callback changed identity. Changing `state` or `virtualizer` re-attaches.
 - `<TkTree>` owns its scroll viewport, so give its container a height.
 - It is a client component (`'use client'`); it works in Next.js App Router and other RSC setups as a client boundary.
-- Variable row heights: pass a `TanStackVirtualizer` (from `@treekit/core/tanstack`) as `virtualizer`; rows measure themselves.
+- Variable row heights: pass a `TanStackVirtualizer` (from `@constantine-24/treekit-core/tanstack`) as `virtualizer`; rows measure themselves.
 
 ## Props
 
@@ -127,7 +127,7 @@ tree.current?.scrollToNode('readme'); // false if the node is hidden by collapse
 
 ## Theming
 
-Import `@treekit/react/styles.css` once, then theme through CSS custom properties on `.tk-tree` or any ancestor (or the `style` prop). Row height and indentation are props. The properties are the same as `@treekit/angular`'s:
+Import `@constantine-24/treekit-react/styles.css` once, then theme through CSS custom properties on `.tk-tree` or any ancestor (or the `style` prop). Row height and indentation are props. The properties are the same as `@constantine-24/treekit-angular`'s:
 
 | Property                     | Applies to                                     |
 | ---------------------------- | ---------------------------------------------- |

@@ -8,8 +8,8 @@ import {
   output,
   viewChild,
 } from '@angular/core';
-import { TkTree, TkTreeEmptyDef, TkTreeNodeDef } from '@treekit/angular';
-import { DropEvent, TreeNode, TreeState, TreeVirtualizer } from '@treekit/core';
+import { TkTree, TkTreeEmptyDef, TkTreeNodeDef } from '@constantine-24/treekit-angular';
+import { DropEvent, TreeNode, TreeState, TreeVirtualizer } from '@constantine-24/treekit-core';
 import {
   DemoItem,
   DropProbe,
@@ -18,7 +18,7 @@ import {
   probeDrop,
   ROW_HEIGHT,
   SPRING_LOAD_DELAY,
-} from '@treekit/demo-shared';
+} from 'demo-shared';
 
 /**
  * The tree itself, plus the drag probe that feeds the calipers and status bar.

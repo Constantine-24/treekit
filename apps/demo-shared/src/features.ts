@@ -73,5 +73,5 @@ export const KEY_LEGEND: readonly KeyBinding[] = [
 /** Links between the site and the two showcases, relative to each app's base. */
 export const DEMO_LINKS = {
   github: 'https://github.com/Constantine-24/treekit',
-  npm: 'https://www.npmjs.com/org/treekit',
+  npm: 'https://www.npmjs.com/search?q=%40constantine-24%2Ftreekit',
 } as const;

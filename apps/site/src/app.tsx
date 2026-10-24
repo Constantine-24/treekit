@@ -1,4 +1,4 @@
-import { DEMO_LINKS } from '@treekit/demo-shared';
+import { DEMO_LINKS } from 'demo-shared';
 import { ReactElement } from 'react';
 
 import { CodeTabs } from './code-tabs';
@@ -37,12 +37,12 @@ const SHOWCASES: readonly { href: string; title: string; body: string }[] = [
   {
     href: 'react/',
     title: 'React showcase',
-    body: 'The full instrument panel on 10,000 rows, built with @treekit/react.',
+    body: 'The full instrument panel on 10,000 rows, built with @constantine-24/treekit-react.',
   },
   {
     href: 'angular/',
     title: 'Angular showcase',
-    body: 'The same panel, component for component, built with @treekit/angular.',
+    body: 'The same panel, component for component, built with @constantine-24/treekit-angular.',
   },
   {
     href: DEMO_LINKS.github,
@@ -52,7 +52,7 @@ const SHOWCASES: readonly { href: string; title: string; body: string }[] = [
   {
     href: DEMO_LINKS.npm,
     title: 'Packages on npm',
-    body: '@treekit/core, @treekit/react and @treekit/angular — MIT licensed.',
+    body: '@constantine-24/treekit-core, @constantine-24/treekit-react and @constantine-24/treekit-angular — MIT licensed.',
   },
 ];
 
@@ -89,9 +89,10 @@ export function App(): ReactElement {
               them with a mouse or a keyboard. One headless core, with thin adapters for React and
               Angular — or wire it to plain DOM yourself.
             </p>
-            <CopyCommand command="npm install @treekit/react" />
+            <CopyCommand command="npm install @constantine-24/treekit-react" />
             <p className="hint">
-              or <code>@treekit/angular</code> · <code>@treekit/core</code> for anything else
+              or <code>@constantine-24/treekit-angular</code>,{' '}
+              <code>@constantine-24/treekit-core</code>
             </p>
             <div className="cta">
               <a className="button primary" href="react/">

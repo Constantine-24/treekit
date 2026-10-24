@@ -18,7 +18,7 @@ export interface TanStackVirtualizerOptions {
 
 /**
  * `TreeVirtualizer` backed by `@tanstack/virtual-core`, enabling variable /
- * measured row heights. Lives at the `@treekit/core/tanstack` subpath so the
+ * measured row heights. Lives at the `@constantine-24/treekit-core/tanstack` subpath so the
  * dependency stays opt-in: `@tanstack/virtual-core` is an optional peer that
  * only consumers importing this module need to install.
  */

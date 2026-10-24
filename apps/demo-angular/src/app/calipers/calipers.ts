@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { DropProbe } from '@treekit/demo-shared';
+import { DropProbe } from 'demo-shared';
 
 /** Calibration marks drawn over the row the pointer is resolving a drop against. */
 @Component({

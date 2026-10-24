@@ -1,6 +1,6 @@
 ---
 name: release-check
-description: Verify the treekit monorepo is releasable — every gate plus the npm tarball check for @treekit/core, @treekit/angular and @treekit/react. Use when the user asks whether a release is ready or before merging the Version Packages PR. Never publishes or tags.
+description: Verify the treekit monorepo is releasable — every gate plus the npm tarball check for @constantine-24/treekit-core, @constantine-24/treekit-angular and @constantine-24/treekit-react. Use when the user asks whether a release is ready or before merging the Version Packages PR. Never publishes or tags.
 ---
 
 # release-check

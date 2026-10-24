@@ -6,10 +6,10 @@
     "types": ["node", "vite/client"],
     /* Source-linked, like the showcases (apps/CLAUDE.md). */
     "paths": {
-      "@treekit/core": ["../../packages/core/src/index.ts"],
-      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"],
-      "@treekit/react": ["../../packages/react/src/index.ts"],
-      "@treekit/demo-shared": ["../demo-shared/src/index.ts"]
+      "@constantine-24/treekit-core": ["../../packages/core/src/index.ts"],
+      "@constantine-24/treekit-core/tanstack": ["../../packages/core/src/tanstack.ts"],
+      "@constantine-24/treekit-react": ["../../packages/react/src/index.ts"],
+      "demo-shared": ["../demo-shared/src/index.ts"]
     }
   },
   "include": ["src", "vite.config.ts"],

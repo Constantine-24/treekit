@@ -1,6 +1,6 @@
-import { TreeState } from '@treekit/core';
-import { TkTree } from '@treekit/react';
-import '@treekit/react/styles.css';
+import { TreeState } from '@constantine-24/treekit-core';
+import { TkTree } from '@constantine-24/treekit-react';
+import '@constantine-24/treekit-react/styles.css';
 import { useState } from 'react';
 
 interface FileItem {

@@ -3,9 +3,9 @@ import '@fontsource/ibm-plex-sans/400.css';
 import '@fontsource/ibm-plex-sans/500.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
-import '@treekit/react/styles.css';
-import '@treekit/demo-shared/theme.css';
-import '@treekit/demo-shared/demo.css';
+import '@constantine-24/treekit-react/styles.css';
+import 'demo-shared/theme.css';
+import 'demo-shared/demo.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

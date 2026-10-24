@@ -12,9 +12,9 @@ body:
       multiple: true
       options:
         [
-          '@treekit/core',
-          '@treekit/angular',
-          '@treekit/react',
+          '@constantine-24/treekit-core',
+          '@constantine-24/treekit-angular',
+          '@constantine-24/treekit-react',
           'Vanilla / headless usage',
           'Docs / demo',
         ]
@@ -55,8 +55,8 @@ body:
     id: versions
     attributes:
       label: Versions
-      description: '@treekit/* packages, and @angular/core or react if relevant'
-      placeholder: '@treekit/core 0.1.0, @treekit/react 0.1.0, react 19.2.0'
+      description: '@constantine-24/treekit-* packages, and @angular/core or react if relevant'
+      placeholder: '@constantine-24/treekit-core 0.1.0, @constantine-24/treekit-react 0.1.0, react 19.2.0'
     validations:
       required: true
   - type: input

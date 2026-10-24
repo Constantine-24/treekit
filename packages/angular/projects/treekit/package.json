@@ -1,7 +1,7 @@
 {
-  "name": "@treekit/angular",
+  "name": "@constantine-24/treekit-angular",
   "version": "0.0.0",
-  "description": "Angular component over @treekit/core: virtualized tree with native HTML5 drag-and-drop, keyboard-accessible DnD, filtering, and lazy loading. No Material or CDK dependency.",
+  "description": "Angular component over @constantine-24/treekit-core: virtualized tree with native HTML5 drag-and-drop, keyboard-accessible DnD, filtering, and lazy loading. No Material or CDK dependency.",
   "license": "MIT",
   "author": "Konstantin Penzin",
   "homepage": "https://constantine-24.github.io/treekit/",
@@ -31,7 +31,7 @@
   "peerDependencies": {
     "@angular/common": ">=22.0.0",
     "@angular/core": ">=22.0.0",
-    "@treekit/core": "workspace:0.x"
+    "@constantine-24/treekit-core": "workspace:0.x"
   },
   "dependencies": {
     "tslib": "^2.3.0"

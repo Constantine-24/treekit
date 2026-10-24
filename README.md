@@ -4,11 +4,11 @@
 
 **A virtualized tree with native drag-and-drop — headless core, Angular and React adapters.**
 
-[![@treekit/core](https://img.shields.io/npm/v/@treekit/core?label=%40treekit%2Fcore&color=2f4fe0)](https://www.npmjs.com/package/@treekit/core)
-[![@treekit/react](https://img.shields.io/npm/v/@treekit/react?label=%40treekit%2Freact&color=2f4fe0)](https://www.npmjs.com/package/@treekit/react)
-[![@treekit/angular](https://img.shields.io/npm/v/@treekit/angular?label=%40treekit%2Fangular&color=2f4fe0)](https://www.npmjs.com/package/@treekit/angular)
+[![@constantine-24/treekit-core](https://img.shields.io/npm/v/@constantine-24/treekit-core?label=%40constantine-24%2Ftreekit-core&color=2f4fe0)](https://www.npmjs.com/package/@constantine-24/treekit-core)
+[![@constantine-24/treekit-react](https://img.shields.io/npm/v/@constantine-24/treekit-react?label=%40constantine-24%2Ftreekit-react&color=2f4fe0)](https://www.npmjs.com/package/@constantine-24/treekit-react)
+[![@constantine-24/treekit-angular](https://img.shields.io/npm/v/@constantine-24/treekit-angular?label=%40constantine-24%2Ftreekit-angular&color=2f4fe0)](https://www.npmjs.com/package/@constantine-24/treekit-angular)
 [![CI](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml/badge.svg)](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml)
-[![core size](https://img.shields.io/bundlephobia/minzip/@treekit/core?label=core%20min%2Bgzip)](https://bundlephobia.com/package/@treekit/core)
+[![core size](https://img.shields.io/bundlephobia/minzip/@constantine-24/treekit-core?label=core%20min%2Bgzip)](https://bundlephobia.com/package/@constantine-24/treekit-core)
 [![dependencies](https://img.shields.io/badge/dependencies-0-2f4fe0)](packages/core/package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -35,29 +35,29 @@ Most tree widgets bolt drag-and-drop onto a flow-layout list, and that falls apa
 
 ## Packages
 
-| Package                                                        | What it is                                                                           |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [`@treekit/core`](packages/core#readme)                        | The headless engine: tree state, virtualization, drag-and-drop, keyboard, selection. |
-| [`@treekit/react`](packages/react#readme)                      | `<TkTree>` for React 18 and 19.                                                      |
-| [`@treekit/angular`](packages/angular/projects/treekit#readme) | `<tk-tree>` for Angular 22+. No Material or CDK dependency.                          |
+| Package                                                                       | What it is                                                                           |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [`@constantine-24/treekit-core`](packages/core#readme)                        | The headless engine: tree state, virtualization, drag-and-drop, keyboard, selection. |
+| [`@constantine-24/treekit-react`](packages/react#readme)                      | `<TkTree>` for React 18 and 19.                                                      |
+| [`@constantine-24/treekit-angular`](packages/angular/projects/treekit#readme) | `<tk-tree>` for Angular 22+. No Material or CDK dependency.                          |
 
 The two adapters have the same features, the same markup and the same `--tk-*` theming tokens.
 
 ## Installation
 
 ```bash
-npm install @treekit/core @treekit/react     # React
-npm install @treekit/core @treekit/angular   # Angular
-npm install @treekit/core                    # anything else
+npm install @constantine-24/treekit-core @constantine-24/treekit-react     # React
+npm install @constantine-24/treekit-core @constantine-24/treekit-angular   # Angular
+npm install @constantine-24/treekit-core                    # anything else
 ```
 
-Keep every `@treekit/*` package on the same version — they are released in lockstep.
+Keep every `@constantine-24/treekit-*` package on the same version — they are released in lockstep.
 
-| Peer dependency           | Needed by                                                    |
-| ------------------------- | ------------------------------------------------------------ |
-| `react`, `react-dom`      | `@treekit/react` (`^18 \|\| ^19`)                            |
-| `@angular/core`, `common` | `@treekit/angular` (`>=22`)                                  |
-| `@tanstack/virtual-core`  | optional — only for measured rows (`@treekit/core/tanstack`) |
+| Peer dependency           | Needed by                                                                   |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `react`, `react-dom`      | `@constantine-24/treekit-react` (`^18 \|\| ^19`)                            |
+| `@angular/core`, `common` | `@constantine-24/treekit-angular` (`>=22`)                                  |
+| `@tanstack/virtual-core`  | optional — only for measured rows (`@constantine-24/treekit-core/tanstack`) |
 
 ## Quick start
 
@@ -66,9 +66,9 @@ Each adapter renders a `TreeState` you own, and reports drops for you to apply.
 ### React
 
 ```tsx
-import { TreeState } from '@treekit/core';
-import { TkTree } from '@treekit/react';
-import '@treekit/react/styles.css';
+import { TreeState } from '@constantine-24/treekit-core';
+import { TkTree } from '@constantine-24/treekit-react';
+import '@constantine-24/treekit-react/styles.css';
 import { useState } from 'react';
 
 interface FileItem {
@@ -110,8 +110,8 @@ export function FileTree() {
 
 ```ts
 import { Component } from '@angular/core';
-import { TkTree } from '@treekit/angular';
-import { DropEvent, TreeState } from '@treekit/core';
+import { TkTree } from '@constantine-24/treekit-angular';
+import { DropEvent, TreeState } from '@constantine-24/treekit-core';
 
 interface FileItem {
   size: number;
@@ -158,7 +158,7 @@ import {
   FixedHeightVirtualizer,
   KeyboardController,
   TreeState,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 
 const state = new TreeState<null>();
 state.setSource(roots);
@@ -195,7 +195,7 @@ The complete version of this snippet is on the [landing page](https://constantin
 
 ```mermaid
 flowchart LR
-  subgraph core["@treekit/core — five independent layers"]
+  subgraph core["@constantine-24/treekit-core — five independent layers"]
     S[TreeState<br/>forest · visible list · mutations · filter · lazy load]
     V[TreeVirtualizer<br/>fixed height · TanStack]
     D[DndEngine<br/>pointer drag-and-drop]
@@ -205,33 +205,33 @@ flowchart LR
   D -- DropEvent --> App[Your code]
   K -- DropEvent --> App
   App -- "move / add / expand" --> S
-  core --- R["@treekit/react"]
-  core --- A["@treekit/angular"]
+  core --- R["@constantine-24/treekit-react"]
+  core --- A["@constantine-24/treekit-angular"]
 ```
 
 The layers share no state — only `TreeNode` identity and the `data-node-id` attribute — so each can be used alone. Both engines emit the same `DropEvent`, and neither ever mutates the tree: `canDropAt` decides what may light up, and your `onDrop` decides what happens. Architecture notes for contributors live in [`.claude/rules/architecture.md`](.claude/rules/architecture.md) and [`packages/core/CLAUDE.md`](packages/core/CLAUDE.md).
 
 ## Documentation
 
-- **[@treekit/core](packages/core#readme)** — the layers, the drop model, virtualizers, and the full API list.
-- **[@treekit/react](packages/react#readme)** — props, callbacks, render props, the imperative handle, theming.
-- **[@treekit/angular](packages/angular/projects/treekit#readme)** — inputs, outputs, templates, the imperative API, theming.
+- **[@constantine-24/treekit-core](packages/core#readme)** — the layers, the drop model, virtualizers, and the full API list.
+- **[@constantine-24/treekit-react](packages/react#readme)** — props, callbacks, render props, the imperative handle, theming.
+- **[@constantine-24/treekit-angular](packages/angular/projects/treekit#readme)** — inputs, outputs, templates, the imperative API, theming.
 - **Showcases** — the [React](https://constantine-24.github.io/treekit/react/) and [Angular](https://constantine-24.github.io/treekit/angular/) instrument panels run 10,000 rows with multi-select, palette drags, filtering, a lazy branch and spring loading, and draw the library's own drop arithmetic live (`resolveDropIntent`) as you hover mid-drag. Their sources are [`apps/demo-react`](apps/demo-react) and [`apps/demo-angular`](apps/demo-angular).
 
 ## Compatibility
 
-| Package            | Requires                                                 |
-| ------------------ | -------------------------------------------------------- |
-| `@treekit/core`    | Any evergreen browser (ES2022). No runtime dependencies. |
-| `@treekit/react`   | React 18 or 19. Client component (`'use client'`).       |
-| `@treekit/angular` | Angular 22+, standalone, zoneless-ready.                 |
+| Package                           | Requires                                                 |
+| --------------------------------- | -------------------------------------------------------- |
+| `@constantine-24/treekit-core`    | Any evergreen browser (ES2022). No runtime dependencies. |
+| `@constantine-24/treekit-react`   | React 18 or 19. Client component (`'use client'`).       |
+| `@constantine-24/treekit-angular` | Angular 22+, standalone, zoneless-ready.                 |
 
 ## Limitations
 
 Read these before adopting:
 
 - **Native HTML5 drag-and-drop does not fire from touch gestures on Android Chrome.** Desktop, mouse and pen work everywhere, and iOS Safari supports native DnD. Keyboard drag-and-drop is the supported fallback on touch.
-- The built-in virtualizer assumes a **fixed row height**. Variable heights need `TanStackVirtualizer` from `@treekit/core/tanstack` (install `@tanstack/virtual-core`); both adapters then measure rows automatically.
+- The built-in virtualizer assumes a **fixed row height**. Variable heights need `TanStackVirtualizer` from `@constantine-24/treekit-core/tanstack` (install `@tanstack/virtual-core`); both adapters then measure rows automatically.
 - The tree **owns its scroll viewport** — there is no window-scroll mode.
 - **Enabling multi-select changes one key**: `Space` toggles selection and `Ctrl/Cmd+Space` grabs a row for keyboard drag. Without multi-select, `Space` grabs. Every unambiguous alternative chord collides with a browser or OS shortcut.
 - Selection is **explicit**: selecting a folder does not select its descendants, because a move already relocates the whole subtree.

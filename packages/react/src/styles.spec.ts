@@ -19,7 +19,7 @@ function classes(css: string): string[] {
  * The two adapters promise the same theming surface. A token or class added to
  * one stylesheet and forgotten in the other would silently fork the public API.
  */
-describe('default stylesheet parity with @treekit/angular', () => {
+describe('default stylesheet parity with @constantine-24/treekit-angular', () => {
   const react = read('./tree.css');
   const angular = read('../../angular/projects/treekit/src/lib/tree.scss');
 

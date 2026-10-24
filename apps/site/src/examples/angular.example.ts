@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { TkTree } from '@treekit/angular';
-import { DropEvent, TreeState } from '@treekit/core';
+import { TkTree } from '@constantine-24/treekit-angular';
+import { DropEvent, TreeState } from '@constantine-24/treekit-core';
 
 interface FileItem {
   size: number;

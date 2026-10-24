@@ -6,7 +6,7 @@ import {
   TreeInput,
   TreeNode,
   TreeState,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 
 const ROW_HEIGHT = 28;
 const PALETTE_MIME = 'application/x-treekit-label';

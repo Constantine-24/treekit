@@ -7,10 +7,13 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@treekit/core/tanstack',
+        find: '@constantine-24/treekit-core/tanstack',
         replacement: source('../../packages/core/src/tanstack.ts'),
       },
-      { find: '@treekit/core', replacement: source('../../packages/core/src/index.ts') },
+      {
+        find: '@constantine-24/treekit-core',
+        replacement: source('../../packages/core/src/index.ts'),
+      },
     ],
   },
   test: {

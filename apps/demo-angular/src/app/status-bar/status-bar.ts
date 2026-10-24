@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { DropProbe, formatFraction } from '@treekit/demo-shared';
+import { DropProbe, formatFraction } from 'demo-shared';
 
 /**
  * The readout strip. Idle it carries the status line; during a drag it shows

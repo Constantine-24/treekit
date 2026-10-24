@@ -1,5 +1,5 @@
 {
-  "name": "@treekit/core",
+  "name": "@constantine-24/treekit-core",
   "version": "0.0.0",
   "description": "Headless virtualized tree engine with native HTML5 drag-and-drop: tree state, virtualization, DnD, keyboard accessibility. Zero dependencies.",
   "license": "MIT",

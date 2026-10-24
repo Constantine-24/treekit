@@ -91,7 +91,7 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "prebundle": {
-              "exclude": ["@treekit/core"]
+              "exclude": ["@constantine-24/treekit-core"]
             }
           },
           "configurations": {

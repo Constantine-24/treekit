@@ -6,8 +6,8 @@ import {
   TreeNode,
   TreeState,
   TreeVirtualizer,
-} from '@treekit/core';
-import { TanStackVirtualizer } from '@treekit/core/tanstack';
+} from '@constantine-24/treekit-core';
+import { TanStackVirtualizer } from '@constantine-24/treekit-core/tanstack';
 
 import { DemoItem, LAZY_LOAD_DELAY, OVERSCAN, remoteChildren, ROW_HEIGHT } from './fixtures';
 import { PALETTE_MIME } from './features';

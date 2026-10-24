@@ -3,8 +3,8 @@
   "compilerOptions": {
     "noEmit": true,
     "paths": {
-      "@treekit/core": ["../../packages/core/src/index.ts"],
-      "@treekit/core/tanstack": ["../../packages/core/src/tanstack.ts"]
+      "@constantine-24/treekit-core": ["../../packages/core/src/index.ts"],
+      "@constantine-24/treekit-core/tanstack": ["../../packages/core/src/tanstack.ts"]
     }
   },
   "include": ["src"]

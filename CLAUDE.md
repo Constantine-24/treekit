@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-**treekit** — an open-source, framework-agnostic virtualized tree with native HTML5 drag-and-drop and keyboard-accessible DnD. A headless, zero-dependency engine (`@treekit/core`) plus thin adapters for Angular (`@treekit/angular`) and React (`@treekit/react`), all published to npm from this pnpm monorepo. The landing page and two mirrored showcases (`apps/`) deploy to GitHub Pages at `https://constantine-24.github.io/treekit/`.
+**treekit** — an open-source, framework-agnostic virtualized tree with native HTML5 drag-and-drop and keyboard-accessible DnD. A headless, zero-dependency engine (`@constantine-24/treekit-core`) plus thin adapters for Angular (`@constantine-24/treekit-angular`) and React (`@constantine-24/treekit-react`), all published to npm from this pnpm monorepo. The landing page and two mirrored showcases (`apps/`) deploy to GitHub Pages at `https://constantine-24.github.io/treekit/`.
 
 You are an expert in TypeScript, Angular, React and accessible, publishable UI libraries. Everything under `packages/` is public API that other people install: favour backwards compatibility, documentation and test coverage over cleverness, and keep the two adapters in parity.
 

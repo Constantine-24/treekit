@@ -1,4 +1,4 @@
-import { DropEvent } from '@treekit/core';
+import { DropEvent } from '@constantine-24/treekit-core';
 import {
   applyDrop,
   createDemoState,
@@ -10,8 +10,8 @@ import {
   observeRenderedRows,
   ROW_HEIGHT,
   SPRING_LOAD_DELAY,
-} from '@treekit/demo-shared';
-import { TkTree } from '@treekit/react';
+} from 'demo-shared';
+import { TkTree } from '@constantine-24/treekit-react';
 import {
   ReactElement,
   useCallback,

@@ -1,4 +1,4 @@
-import { DropEvent, TreeState } from '@treekit/core';
+import { DropEvent, TreeState } from '@constantine-24/treekit-core';
 import { describe, expect, it } from 'vitest';
 
 import { applyDrop, nameFilter } from './behaviour';

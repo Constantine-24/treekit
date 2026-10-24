@@ -6,7 +6,7 @@ import {
   TreeState,
   TreeVirtualizer,
   VirtualItem,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 import { createRef, StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 

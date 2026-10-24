@@ -1,6 +1,6 @@
 name: Release
 
-# Changesets release flow for @treekit/core, @treekit/angular and @treekit/react.
+# Changesets release flow for @constantine-24/treekit-core, @constantine-24/treekit-angular and @constantine-24/treekit-react.
 #
 # On every push to main: if changesets are pending, open or update the "Version Packages" PR
 # (versions + CHANGELOGs). When that PR is merged, the same job publishes every package whose

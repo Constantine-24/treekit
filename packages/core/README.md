@@ -1,11 +1,11 @@
-# @treekit/core
+# @constantine-24/treekit-core
 
-[![npm](https://img.shields.io/npm/v/@treekit/core?color=2f4fe0)](https://www.npmjs.com/package/@treekit/core)
+[![npm](https://img.shields.io/npm/v/@constantine-24/treekit-core?color=2f4fe0)](https://www.npmjs.com/package/@constantine-24/treekit-core)
 [![CI](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml/badge.svg)](https://github.com/Constantine-24/treekit/actions/workflows/ci.yml)
 [![dependencies](https://img.shields.io/badge/dependencies-0-2f4fe0)](https://github.com/Constantine-24/treekit/blob/main/packages/core/package.json)
-[![license](https://img.shields.io/npm/l/@treekit/core)](https://github.com/Constantine-24/treekit/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/@constantine-24/treekit-core)](https://github.com/Constantine-24/treekit/blob/main/LICENSE)
 
-The headless, zero-dependency engine behind [treekit](https://github.com/Constantine-24/treekit): a virtualized tree with native HTML5 drag-and-drop, keyboard-accessible drag-and-drop, multi-select, filtering and lazy loading. Use it through [`@treekit/react`](https://www.npmjs.com/package/@treekit/react) or [`@treekit/angular`](https://www.npmjs.com/package/@treekit/angular) — or attach it to plain DOM yourself.
+The headless, zero-dependency engine behind [treekit](https://github.com/Constantine-24/treekit): a virtualized tree with native HTML5 drag-and-drop, keyboard-accessible drag-and-drop, multi-select, filtering and lazy loading. Use it through [`@constantine-24/treekit-react`](https://www.npmjs.com/package/@constantine-24/treekit-react) or [`@constantine-24/treekit-angular`](https://www.npmjs.com/package/@constantine-24/treekit-angular) — or attach it to plain DOM yourself.
 
 **[Live demo](https://constantine-24.github.io/treekit/)**
 
@@ -14,7 +14,7 @@ The headless, zero-dependency engine behind [treekit](https://github.com/Constan
 ## Installation
 
 ```bash
-npm install @treekit/core
+npm install @constantine-24/treekit-core
 # optional, only for measured (variable-height) rows:
 npm install @tanstack/virtual-core
 ```
@@ -28,7 +28,7 @@ The premise: **rows are absolutely positioned by a virtualizer**, so flow-based 
 ### `TreeState<T>` — data and structure
 
 ```ts
-import { TreeState } from '@treekit/core';
+import { TreeState } from '@constantine-24/treekit-core';
 
 const state = new TreeState<Sensor>({
   // Called when an `expandable` folder with no children is expanded.
@@ -51,8 +51,8 @@ Children arrays are the single source of order; node objects keep their identity
 ### `TreeVirtualizer` — which rows exist
 
 ```ts
-import { FixedHeightVirtualizer } from '@treekit/core';
-import { TanStackVirtualizer } from '@treekit/core/tanstack'; // needs @tanstack/virtual-core
+import { FixedHeightVirtualizer } from '@constantine-24/treekit-core';
+import { TanStackVirtualizer } from '@constantine-24/treekit-core/tanstack'; // needs @tanstack/virtual-core
 
 const virtualizer = new FixedHeightVirtualizer({ rowHeight: 28, overscan: 6 });
 // or: new TanStackVirtualizer({ estimateSize: () => 28 }) — then call virtualizer.measure(row, index)
@@ -66,7 +66,7 @@ virtualizer.totalSize(); // height of the scrollable content
 ### `DndEngine<T>` — pointer drag-and-drop
 
 ```ts
-import { DndEngine } from '@treekit/core';
+import { DndEngine } from '@constantine-24/treekit-core';
 
 const dnd = new DndEngine<Sensor>({
   getVisibleNodes: () => state.visibleNodes(),
@@ -89,7 +89,7 @@ The drop intent is the pure, exported `resolveDropIntent(isFolder, fraction)`: t
 ### `KeyboardController<T>` — ARIA navigation and keyboard drag-and-drop
 
 ```ts
-import { KeyboardController } from '@treekit/core';
+import { KeyboardController } from '@constantine-24/treekit-core';
 
 const keyboard = new KeyboardController<Sensor>({
   state,
@@ -110,7 +110,7 @@ Arrows, Home/End and Left/Right navigate and expand; Space grabs, arrows step th
 ### `SelectionModel<T>` — multi-selection
 
 ```ts
-import { SelectionModel } from '@treekit/core';
+import { SelectionModel } from '@constantine-24/treekit-core';
 
 const selection = new SelectionModel<Sensor>({ state, onChange: render });
 selection.selectOn(node, { ctrlOrMeta: event.metaKey || event.ctrlKey, shift: event.shiftKey });
@@ -121,18 +121,18 @@ Selection is stored by id (it survives `setSource`), `selectedNodes()` returns o
 
 ## API
 
-| Export                                                                              | Kind      |
-| ----------------------------------------------------------------------------------- | --------- |
-| `TreeState`, `TreeStateOptions`                                                     | class     |
-| `TreeNode`, `TreeInput`, `DropMode`, `DropTarget`, `DropEvent`                      | types     |
-| `isDescendant`, `isDescendantOfAny`, `denestNodes`, `normalizeDragNodes`            | functions |
-| `TreeVirtualizer`, `VirtualItem`                                                    | types     |
-| `FixedHeightVirtualizer`, `FixedHeightVirtualizerOptions`                           | class     |
-| `DndEngine`, `DndEngineOptions`, `InsertionTarget`, `InsertionLine`                 | class     |
-| `resolveDropIntent`                                                                 | function  |
-| `KeyboardController`, `KeyboardControllerOptions`, `KeyboardMessages`               | class     |
-| `SelectionModel`, `SelectionModelOptions`, `SelectionModifiers`                     | class     |
-| `TanStackVirtualizer`, `TanStackVirtualizerOptions` — from `@treekit/core/tanstack` | class     |
+| Export                                                                                             | Kind      |
+| -------------------------------------------------------------------------------------------------- | --------- |
+| `TreeState`, `TreeStateOptions`                                                                    | class     |
+| `TreeNode`, `TreeInput`, `DropMode`, `DropTarget`, `DropEvent`                                     | types     |
+| `isDescendant`, `isDescendantOfAny`, `denestNodes`, `normalizeDragNodes`                           | functions |
+| `TreeVirtualizer`, `VirtualItem`                                                                   | types     |
+| `FixedHeightVirtualizer`, `FixedHeightVirtualizerOptions`                                          | class     |
+| `DndEngine`, `DndEngineOptions`, `InsertionTarget`, `InsertionLine`                                | class     |
+| `resolveDropIntent`                                                                                | function  |
+| `KeyboardController`, `KeyboardControllerOptions`, `KeyboardMessages`                              | class     |
+| `SelectionModel`, `SelectionModelOptions`, `SelectionModifiers`                                    | class     |
+| `TanStackVirtualizer`, `TanStackVirtualizerOptions` — from `@constantine-24/treekit-core/tanstack` | class     |
 
 Every export carries TSDoc in its `.d.ts`. Limitations (touch drag on Android Chrome, fixed-height default, owned scroll viewport, RTL) are listed in the [repository README](https://github.com/Constantine-24/treekit#limitations).
 

@@ -7,7 +7,7 @@ import {
   TreeNode,
   TreeState,
   TreeVirtualizer,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 import {
   CSSProperties,
   forwardRef,
@@ -625,12 +625,12 @@ function TkTreeRowView<T>({
 
 /**
  * Virtualized tree with native HTML5 drag-and-drop and keyboard-accessible
- * DnD, rendered over a consumer-owned `TreeState` from `@treekit/core`.
+ * DnD, rendered over a consumer-owned `TreeState` from `@constantine-24/treekit-core`.
  *
  * The component is a thin adapter: all tree logic (visibility, mutations,
  * filtering, drop resolution, keyboard semantics) lives in the headless core;
  * this component wires the engines to the DOM and renders rows, optionally
- * through `renderNode`. Import `@treekit/react/styles.css` once for the
+ * through `renderNode`. Import `@constantine-24/treekit-react/styles.css` once for the
  * default look, themed through `--tk-*` custom properties.
  *
  * Accessibility follows the `aria-activedescendant` pattern: the viewport

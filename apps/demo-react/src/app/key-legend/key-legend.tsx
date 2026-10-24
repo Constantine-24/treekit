@@ -1,4 +1,4 @@
-import { KEY_LEGEND } from '@treekit/demo-shared';
+import { KEY_LEGEND } from 'demo-shared';
 import { Fragment, ReactElement } from 'react';
 
 /** The multi-select key bindings. */

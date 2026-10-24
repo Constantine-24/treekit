@@ -1,4 +1,4 @@
-import { DropEvent, TreeNode } from '@treekit/core';
+import { DropEvent, TreeNode } from '@constantine-24/treekit-core';
 import {
   applyDrop,
   createDemoState,
@@ -10,7 +10,7 @@ import {
   generateForest,
   initialToggles,
   nameFilter,
-} from '@treekit/demo-shared';
+} from 'demo-shared';
 import { ReactElement, useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { Calipers } from './calipers/calipers';

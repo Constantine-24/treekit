@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Packs every publishable package exactly as `pnpm publish` would (honouring
- * `publishConfig.directory` for @treekit/angular) and checks each tarball:
+ * `publishConfig.directory` for @constantine-24/treekit-angular) and checks each tarball:
  * required files present, no sources or specs, no `workspace:` specifier left
  * in the packed package.json, and type declarations that resolve for every
  * consumer (arethetypeswrong). Run after `pnpm build`.
@@ -27,7 +27,10 @@ const PACKAGES = [
   {
     dir: 'packages/angular/projects/treekit',
     attw: ['--profile', 'esm-only'],
-    required: ['fesm2022/treekit-angular.mjs', 'types/treekit-angular.d.ts'],
+    required: [
+      'fesm2022/constantine-24-treekit-angular.mjs',
+      'types/constantine-24-treekit-angular.d.ts',
+    ],
   },
 ];
 const ALWAYS = ['package.json', 'README.md', 'LICENSE'];

@@ -1,6 +1,6 @@
 ---
 name: changeset
-description: Draft a Changesets entry for the current diff in the treekit monorepo (affected @treekit/* packages, pre-1.0 bump level, consumer-facing notes). Use when the user asks to add a changeset or prepare release notes for a change. Never versions or publishes.
+description: Draft a Changesets entry for the current diff in the treekit monorepo (affected @constantine-24/treekit-* packages, pre-1.0 bump level, consumer-facing notes). Use when the user asks to add a changeset or prepare release notes for a change. Never versions or publishes.
 ---
 
 # changeset

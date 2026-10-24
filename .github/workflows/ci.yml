@@ -39,7 +39,7 @@ jobs:
         run: pnpm lint
 
       - name: Type-check
-        run: pnpm --filter @treekit/core --filter @treekit/react --filter @treekit/demo-shared typecheck
+        run: pnpm --filter @constantine-24/treekit-core --filter @constantine-24/treekit-react --filter demo-shared typecheck
 
       - name: Unit tests
         run: pnpm test

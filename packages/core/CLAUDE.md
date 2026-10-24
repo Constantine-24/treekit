@@ -1,4 +1,4 @@
-# `@treekit/core` — internals
+# `@constantine-24/treekit-core` — internals
 
 The headless engine. Read `.claude/rules/architecture.md` first for the layer map; this file holds the invariants of each layer. Zero runtime dependencies, no framework, no DOM assumptions beyond standard APIs.
 
@@ -17,7 +17,7 @@ Owns the forest, its flat depth-first projection, and all structural mutations. 
 
 **Contract rule: all geometry must flow through `items()`' `start`/`size` — never `index × rowHeight`.** The interface is shaped for the variable-height superset so measured-row implementations work with no consumer change. `FixedHeightVirtualizer` is the only place in the library allowed to derive geometry from `index × rowHeight`.
 
-`TanStackVirtualizer` lives at the `@treekit/core/tanstack` subpath (`src/tanstack.ts`) specifically to keep `@tanstack/virtual-core` an _optional_ peer dependency.
+`TanStackVirtualizer` lives at the `@constantine-24/treekit-core/tanstack` subpath (`src/tanstack.ts`) specifically to keep `@tanstack/virtual-core` an _optional_ peer dependency.
 
 ## 3. `DndEngine<T>` — `src/dnd/dnd-engine.ts`
 

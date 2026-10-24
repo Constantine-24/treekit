@@ -1,5 +1,5 @@
 /*
- * Default stylesheet for @treekit/react — import once: `import '@treekit/react/styles.css'`.
+ * Default stylesheet for @constantine-24/treekit-react — import once: `import '@constantine-24/treekit-react/styles.css'`.
  *
  * A plain-CSS port of the Angular adapter's `tree.scss`, with the same `tk-*` class names and
  * the same `--tk-*` custom properties (a spec compares the token sets). Theme the tree by

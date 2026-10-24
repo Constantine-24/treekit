@@ -14,7 +14,13 @@ body:
     attributes:
       label: Package
       multiple: true
-      options: ['@treekit/core', '@treekit/angular', '@treekit/react', 'Not sure']
+      options:
+        [
+          '@constantine-24/treekit-core',
+          '@constantine-24/treekit-angular',
+          '@constantine-24/treekit-react',
+          'Not sure',
+        ]
   - type: textarea
     id: proposal
     attributes:

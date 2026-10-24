@@ -2,8 +2,8 @@
 
 The core ships no CSS. Each adapter ships one default stylesheet with the **same `tk-*` class names and the same `--tk-*` custom properties**:
 
-- `@treekit/angular` — `packages/angular/projects/treekit/src/lib/tree.scss`, component-scoped.
-- `@treekit/react` — `packages/react/src/tree.css`, exported as `@treekit/react/styles.css` (the consumer imports it once).
+- `@constantine-24/treekit-angular` — `packages/angular/projects/treekit/src/lib/tree.scss`, component-scoped.
+- `@constantine-24/treekit-react` — `packages/react/src/tree.css`, exported as `@constantine-24/treekit-react/styles.css` (the consumer imports it once).
 
 <important if="you are writing CSS or SCSS, modifying component styles, or touching theming">
 

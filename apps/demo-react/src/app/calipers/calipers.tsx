@@ -1,4 +1,4 @@
-import { DropProbe } from '@treekit/demo-shared';
+import { DropProbe } from 'demo-shared';
 import { ReactElement } from 'react';
 
 /** Calibration marks drawn over the row the pointer is resolving a drop against. */

@@ -38,16 +38,16 @@ importers:
       '@angular/router':
         specifier: ^22.0.0
         version: 22.0.7(@angular/common@22.0.7(@angular/core@22.0.7(@angular/compiler@22.0.7)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.7(@angular/compiler@22.0.7)(rxjs@7.8.2))(@angular/platform-browser@22.0.7(@angular/common@22.0.7(@angular/core@22.0.7(@angular/compiler@22.0.7)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.7(@angular/compiler@22.0.7)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@constantine-24/treekit-angular':
+        specifier: workspace:*
+        version: link:../../packages/angular/projects/treekit
+      '@constantine-24/treekit-core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@tanstack/virtual-core':
         specifier: ^3.13.0
         version: 3.17.4
-      '@treekit/angular':
-        specifier: workspace:*
-        version: link:../../packages/angular/projects/treekit
-      '@treekit/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@treekit/demo-shared':
+      demo-shared:
         specifier: workspace:*
         version: link:../demo-shared
       rxjs:
@@ -90,18 +90,18 @@ importers:
 
   apps/demo-react:
     dependencies:
+      '@constantine-24/treekit-core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@constantine-24/treekit-react':
+        specifier: workspace:*
+        version: link:../../packages/react
       '@tanstack/virtual-core':
         specifier: ^3.13.0
         version: 3.17.4
-      '@treekit/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@treekit/demo-shared':
+      demo-shared:
         specifier: workspace:*
         version: link:../demo-shared
-      '@treekit/react':
-        specifier: workspace:*
-        version: link:../../packages/react
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -151,7 +151,7 @@ importers:
 
   apps/demo-shared:
     dependencies:
-      '@treekit/core':
+      '@constantine-24/treekit-core':
         specifier: workspace:*
         version: link:../../packages/core
     devDependencies:
@@ -170,7 +170,7 @@ importers:
 
   apps/demo-vanilla:
     dependencies:
-      '@treekit/core':
+      '@constantine-24/treekit-core':
         specifier: workspace:*
         version: link:../../packages/core
     devDependencies:
@@ -183,15 +183,15 @@ importers:
 
   apps/site:
     dependencies:
-      '@treekit/core':
+      '@constantine-24/treekit-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@treekit/demo-shared':
-        specifier: workspace:*
-        version: link:../demo-shared
-      '@treekit/react':
+      '@constantine-24/treekit-react':
         specifier: workspace:*
         version: link:../../packages/react
+      demo-shared:
+        specifier: workspace:*
+        version: link:../demo-shared
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -278,7 +278,7 @@ importers:
       '@angular/compiler-cli':
         specifier: ^22.0.0
         version: 22.0.7(@angular/compiler@22.0.7)(supports-color@7.2.0)(typescript@6.0.3)
-      '@treekit/core':
+      '@constantine-24/treekit-core':
         specifier: workspace:*
         version: link:../core
       jsdom:
@@ -305,7 +305,7 @@ importers:
       '@angular/core':
         specifier: '>=22.0.0'
         version: 22.0.7(@angular/compiler@22.0.7)(rxjs@7.8.2)
-      '@treekit/core':
+      '@constantine-24/treekit-core':
         specifier: workspace:0.x
         version: link:../../../core
       tslib:
@@ -345,6 +345,9 @@ importers:
 
   packages/react:
     devDependencies:
+      '@constantine-24/treekit-core':
+        specifier: workspace:*
+        version: link:../core
       '@eslint/js':
         specifier: ^9.30.0
         version: 9.39.5
@@ -354,9 +357,6 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.0
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@treekit/core':
-        specifier: workspace:*
-        version: link:../core
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.1

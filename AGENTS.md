@@ -1,14 +1,14 @@
 # AGENTS.md
 
-**treekit** — a framework-agnostic virtualized tree with native drag-and-drop: `@treekit/core` (headless, zero dependencies), `@treekit/angular` and `@treekit/react`, published to npm from this pnpm monorepo, plus a landing page and two mirrored demos deployed to GitHub Pages.
+**treekit** — a framework-agnostic virtualized tree with native drag-and-drop: `@constantine-24/treekit-core` (headless, zero dependencies), `@constantine-24/treekit-angular` and `@constantine-24/treekit-react`, published to npm from this pnpm monorepo, plus a landing page and two mirrored demos deployed to GitHub Pages.
 
 This file exists for cross-tool compatibility (Codex, Cursor, Aider, Copilot, …). The authoritative guidance for AI agents is **[CLAUDE.md](./CLAUDE.md)** and the rule modules under **[`.claude/rules/`](./.claude/rules/)**. Read them as the source of truth; this file only points at them and must not restate them.
 
 ## Project map
 
-- `packages/core/` — `@treekit/core`, the headless engine (+ `@treekit/core/tanstack`)
-- `packages/angular/projects/treekit/` — `@treekit/angular` (inside the `packages/angular` Angular CLI workspace)
-- `packages/react/` — `@treekit/react`
+- `packages/core/` — `@constantine-24/treekit-core`, the headless engine (+ `@constantine-24/treekit-core/tanstack`)
+- `packages/angular/projects/treekit/` — `@constantine-24/treekit-angular` (inside the `packages/angular` Angular CLI workspace)
+- `packages/react/` — `@constantine-24/treekit-react`
 - `apps/site/` — landing page (GitHub Pages root)
 - `apps/demo-react/`, `apps/demo-angular/` — the two mirrored showcases; `apps/demo-shared/` — their shared fixtures and theme
 - `apps/demo-vanilla/` — headless, dist-linked proof

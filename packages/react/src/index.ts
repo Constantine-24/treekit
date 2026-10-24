@@ -1,5 +1,5 @@
 /*
- * Public API Surface of @treekit/react
+ * Public API Surface of @constantine-24/treekit-react
  */
 
 export { TkTree } from './tree';

@@ -22,7 +22,7 @@ import {
   TreeNode,
   TreeState,
   TreeVirtualizer,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 
 import { TkTreeNodeDef } from './tree-node-def';
 import { TkTreeEmptyDef, TkTreeLoadingDef } from './tree-placeholders';
@@ -43,7 +43,7 @@ export interface TkTreeRow<T> {
 
 /**
  * Virtualized tree with native HTML5 drag-and-drop and keyboard-accessible
- * DnD, rendered over a consumer-owned `TreeState` from `@treekit/core`.
+ * DnD, rendered over a consumer-owned `TreeState` from `@constantine-24/treekit-core`.
  *
  * The component is a thin adapter: all tree logic (visibility, mutations,
  * filtering, drop resolution, keyboard semantics) lives in the headless core;

@@ -4,7 +4,7 @@ import {
   FixedHeightVirtualizer,
   KeyboardController,
   TreeState,
-} from '@treekit/core';
+} from '@constantine-24/treekit-core';
 
 // <div id="viewport" role="tree" tabindex="0" style="height: 400px; overflow: auto">
 //   <div id="content" style="position: relative"></div>

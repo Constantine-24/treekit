@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, inject, input } from '@angular/core';
-import type { TreeVirtualizer } from '@treekit/core';
+import type { TreeVirtualizer } from '@constantine-24/treekit-core';
 
 /**
  * Reports a rendered row element to the active virtualizer for measurement.

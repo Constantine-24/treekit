@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@tanstack/virtual-core": "^3.13.0",
-    "@treekit/core": "workspace:*",
-    "@treekit/demo-shared": "workspace:*",
-    "@treekit/react": "workspace:*",
+    "@constantine-24/treekit-core": "workspace:*",
+    "demo-shared": "workspace:*",
+    "@constantine-24/treekit-react": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
