@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@tanstack/virtual-core": "^3.19.6",
+    "@tanstack/virtual-core": "^3.19.8",
     "@constantine-24/treekit-core": "workspace:*",
     "demo-shared": "workspace:*",
     "@constantine-24/treekit-react": "workspace:*",
