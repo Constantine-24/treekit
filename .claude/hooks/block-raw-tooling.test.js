@@ -115,6 +115,24 @@ describe('block-raw-tooling: publishing', () => {
     'timeout -s KILL 60 npm publish',
     'watch -n 5 npm publish',
     'find packages -maxdepth 1 -type d -exec npm publish {} \\;',
+    // npm resolves unique abbreviations and aliases (`lib/utils/cmd-list.js`).
+    'npm pu',
+    'npm publ',
+    'npm publis --access public',
+    'npm unp @constantine-24/treekit-core@0.1.0',
+    'npm unpub @constantine-24/treekit-core@0.1.0',
+    'npm dep @constantine-24/treekit-core@0.1.0 "Broken"',
+    'npm depr @constantine-24/treekit-core@0.1.0 "Broken"',
+    'npm dist-tags add @constantine-24/treekit-core@0.1.0 latest',
+    'npm exe changeset publish',
+    'npm ru release',
+    // Wrappers and shells given by path, and `--` before the `-c` script.
+    '/usr/bin/env npm publish',
+    '/usr/bin/sudo npm publish',
+    "bash -c -- 'npm publish'",
+    // A `<<` that never finds its delimiter line is not a heredoc: later lines still run.
+    'pnpm test -- --filter "a<<b"\nnpm publish',
+    'echo $((1<<2))\nnpm publish',
   ]) {
     it(`blocks ${command}`, () => expectBlocked(command, PUBLISH));
   }
@@ -251,6 +269,10 @@ describe('block-raw-tooling: allowed', () => {
     'npm help publish',
     'npm help deprecate',
     'npm deprecate --help',
+    'npm dist-tags ls @constantine-24/treekit-core',
+    'npm un x --help',
+    'npm docs @constantine-24/treekit-core',
+    'npm pkg get version',
     'pnpm help publish',
     'npm publish --help',
     'pnpm --filter @constantine-24/treekit-core exec vitest run src/tree/tree-state.spec.ts -t "publish"',

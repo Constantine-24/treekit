@@ -19,7 +19,9 @@
  * The command line is lexed like a shell would (quotes, escapes, continuations, operators,
  * redirects), so quoted text — commit messages, grep patterns — never counts as a command.
  * A hook is a guard rail, not a sandbox: the real control is npm-side (trusted publishing with
- * tokens disallowed, see release.md). It fails closed: an unreadable payload blocks.
+ * tokens disallowed, see release.md). It fails closed: an unreadable payload blocks. Not covered:
+ * other registry settings (`npm access`, `npm owner`) and tags created through the GitHub API
+ * (`gh api …/git/refs`, `gh release edit --draft=false`).
  *
  * Exit codes: 0 — allow; 2 — block (stderr is shown to the agent as the reason).
  */
@@ -155,17 +157,25 @@ const READS_SCRIPT = /(?:^|[|;&(]\s*|\s)(?:\S*\/)?(?:ba|z|da|k)?sh(?:\s|$)/;
  */
 const extractHeredocs = command => {
   const lines = command.split('\n');
+  // Where each trimmed line occurs, so finding a delimiter line stays linear.
+  const positions = new Map();
+  lines.forEach((line, index) => {
+    const key = line.trim();
+    if (!positions.has(key)) positions.set(key, []);
+    positions.get(key).push(index);
+  });
   const kept = [];
   const scripts = [];
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
     kept.push(line);
     for (const [, , delimiter] of line.matchAll(HEREDOC)) {
-      const body = [];
-      while (++index < lines.length && lines[index].trim() !== delimiter) {
-        body.push(lines[index]);
-      }
-      if (READS_SCRIPT.test(line)) scripts.push(body.join('\n'));
+      // A `<<` with no delimiter line below it (`"a<<b"`, `$((1<<2))`) starts no heredoc, so
+      // the lines after it still run and must still be checked.
+      const end = positions.get(delimiter)?.find(at => at > index);
+      if (end === undefined) continue;
+      if (READS_SCRIPT.test(line)) scripts.push(lines.slice(index + 1, end).join('\n'));
+      index = end;
     }
   }
   return { text: kept.join('\n'), scripts };
@@ -275,13 +285,15 @@ const stripWrappers = words => {
     }
     // `command -v yarn` only looks the tool up.
     if (word === 'command' && /^-[vV]$/.test(words[index + 1] ?? '')) return [];
-    const valueFlags = WRAPPERS.get(word);
+    // Wrappers run the same by path (`/usr/bin/env`, `/usr/bin/sudo`).
+    const name = basename(word);
+    const valueFlags = WRAPPERS.get(name);
     if (!valueFlags) break;
     index++;
     while (index < words.length && words[index].startsWith('-')) {
       index += valueFlags.includes(words[index]) ? 2 : 1;
     }
-    if (word === 'timeout' && /^\d/.test(words[index] ?? '')) index++;
+    if (name === 'timeout' && /^\d/.test(words[index] ?? '')) index++;
   }
   return words.slice(index);
 };
@@ -367,11 +379,26 @@ const vitestTargetsAngular = (args, context) => {
   );
 };
 
+/** npm commands that publish, change published versions, or run another command. */
+const NPM_GUARDED = ['publish', 'unpublish', 'deprecate', 'undeprecate', 'exec', 'run-script'];
+
+/**
+ * The npm command `word` runs. npm accepts aliases and any unique prefix (`npm pu` publishes;
+ * `lib/utils/cmd-list.js`). Over-matching an ambiguous prefix (`npm de`) only blocks a command
+ * npm would reject anyway.
+ */
+const resolveNpmCommand = word => {
+  if (word === undefined || NPM_INSTALL.has(word)) return word;
+  if (word === 'dist-tags') return 'dist-tag';
+  const match = word.length >= 2 ? NPM_GUARDED.find(command => command.startsWith(word)) : null;
+  return match ?? word;
+};
+
 const classifyPackageManager = (manager, args, context) => {
   const { positional, flags } = parseArgs(args, manager === 'pnpm' ? 'pnpm' : 'npm');
   if (flags.has('--help') || flags.has('-h') || positional[0]?.word === 'help') return null;
   const [first, second] = positional;
-  const subcommand = first?.word;
+  const subcommand = manager === 'npm' ? resolveNpmCommand(first?.word) : first?.word;
   // Unpublishing and (un)deprecating change what consumers get, as publishing does.
   if (['publish', 'pub', 'unpublish', 'deprecate', 'undeprecate'].includes(subcommand)) {
     return 'publish';
@@ -424,9 +451,9 @@ const classify = (input, context) => {
 
   if (SHELLS.has(head)) {
     const at = args.findIndex(word => /^-[a-zA-Z]*c[a-zA-Z]*$/.test(word));
-    return at !== -1 && args[at + 1] !== undefined
-      ? check(args[at + 1], context.dir, context.depth + 1)
-      : null;
+    // `bash -c -- 'script'`: `--` ends the options, the script is the next word.
+    const script = args[at + 1] === '--' ? args[at + 2] : args[at + 1];
+    return at !== -1 && script !== undefined ? check(script, context.dir, context.depth + 1) : null;
   }
   if (head === 'eval') return check(args.join(' '), context.dir, context.depth + 1);
   if (head === 'find') {
