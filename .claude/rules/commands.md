@@ -11,6 +11,7 @@ Node: the version CI uses (`.nvmrc`, Node 22; `engines` allows ≥ 20). Package 
 | `pnpm format:check` | Prettier gate (CI enforces it)                                                                                            |
 | `pnpm build:pages`  | Builds `_site/`: landing at `/`, React demo at `/react/`, Angular demo at `/angular/`                                     |
 | `pnpm pack:check`   | `pnpm pack` every publishable package and assert no `workspace:` specifier survives                                       |
+| `pnpm test:hooks`   | `node --test` for the agent guard hook (`.claude/hooks/block-raw-tooling.test.js`)                                        |
 
 Per package:
 

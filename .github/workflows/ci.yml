@@ -44,6 +44,9 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: Agent hook tests
+        run: pnpm test:hooks
+
       - name: LICENSE parity
         # npm only packs files inside the package, so each package carries a copy of the root LICENSE.
         run: |

@@ -15,7 +15,8 @@
     "version-packages": "changeset version && pnpm install --lockfile-only",
     "release": "pnpm build && pnpm test && pnpm pack:check && changeset publish",
     "build:pages": "node scripts/build-pages.mjs",
-    "pack:check": "node scripts/pack-check.mjs"
+    "pack:check": "node scripts/pack-check.mjs",
+    "test:hooks": "node --test .claude/hooks/block-raw-tooling.test.js"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
