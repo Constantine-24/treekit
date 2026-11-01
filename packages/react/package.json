@@ -13,6 +13,9 @@
   "bugs": {
     "url": "https://github.com/Constantine-24/treekit/issues"
   },
+  "engines": {
+    "node": ">=20.11"
+  },
   "keywords": [
     "react",
     "tree",
