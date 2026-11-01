@@ -27,6 +27,8 @@ permissions:
 
 jobs:
   release:
+    # Forks never open Version PRs or attempt to publish.
+    if: github.repository == 'Constantine-24/treekit'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
