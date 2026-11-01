@@ -47,7 +47,7 @@ Rules that are enforced deterministically rather than as prose:
 
 - **ESLint** (`pnpm lint`: `packages/core`, `packages/react`) and **Prettier** (`pnpm format:check`) — both run in CI.
 - **Hooks** — `.claude/settings.json` → `.claude/hooks/*`; Codex mirrors them in `.codex/hooks.json` pointing at the same scripts:
-  - PreToolUse (Bash): block npm/yarn dependency commands, any publish command, and direct `vitest` in the Angular workspace.
+  - PreToolUse (Bash): block npm/yarn dependency commands, any publish command (plus `npm unpublish` / `deprecate` / `dist-tag` changes), pushing tags, and direct `vitest` in the Angular workspace. Tested by `pnpm test:hooks`.
   - PostToolUse (Edit/Write): `prettier --write` the edited file.
 - **CI** (`.github/workflows/ci.yml`) — format, build, lint, tests, LICENSE parity, package-tarball check, Pages build.
 

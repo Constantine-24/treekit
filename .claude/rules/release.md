@@ -14,7 +14,7 @@ Three packages are published to npm — `@constantine-24/treekit-core`, `@consta
 
 <important if="you are preparing, versioning, or publishing a release">
 
-- **Never run `changeset publish`, `pnpm publish`, `npm publish` or `pnpm release`, and never push tags.** A hook blocks the publish commands. Releases happen only by merging the Version Packages PR.
+- **Never run `changeset publish`, `pnpm publish`, `npm publish` or `pnpm release`, and never push tags.** A hook (`.claude/hooks/block-raw-tooling.js`, tested by `pnpm test:hooks`) blocks the publish commands, `npm unpublish` / `deprecate` / `dist-tag` changes and tag pushes. Releases happen only by merging the Version Packages PR.
 - Before a release PR merges, run `/release-check` (all gates plus `pnpm pack:check`) and read the tarball lists. Each tarball has `package.json`, `README.md`, `LICENSE` and `dist/` (with `.d.ts`), and no `src/`, specs or `workspace:` specifiers. `@constantine-24/treekit-react` also has `dist/styles.css`.
 - Each package directory carries a `LICENSE` that is a **byte-identical copy** of the root `LICENSE` (npm only packs files from inside the package; ng-packagr copies `packages/angular/projects/treekit/LICENSE`). CI compares them with `cmp`.
 - `@constantine-24/treekit-angular` publishes from `packages/angular/dist/treekit` (`publishConfig.directory`); pnpm rewrites `workspace:` ranges there at pack time — `pnpm pack:check` proves it, and also runs arethetypeswrong on every tarball.
