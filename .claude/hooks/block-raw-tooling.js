@@ -157,24 +157,36 @@ const READS_SCRIPT = /(?:^|[|;&(]\s*|\s)(?:\S*\/)?(?:ba|z|da|k)?sh(?:\s|$)/;
  */
 const extractHeredocs = command => {
   const lines = command.split('\n');
-  // Where each trimmed line occurs, so finding a delimiter line stays linear.
+  // Where each trimmed line occurs, with a forward-only cursor per delimiter (`index` never
+  // decreases), so finding delimiter lines stays linear even when many heredocs share one.
   const positions = new Map();
   lines.forEach((line, index) => {
     const key = line.trim();
     if (!positions.has(key)) positions.set(key, []);
     positions.get(key).push(index);
   });
+  const cursors = new Map();
+  const nextLine = (delimiter, after) => {
+    const found = positions.get(delimiter) ?? [];
+    let cursor = cursors.get(delimiter) ?? 0;
+    while (cursor < found.length && found[cursor] <= after) cursor++;
+    cursors.set(delimiter, cursor);
+    return found[cursor];
+  };
   const kept = [];
   const scripts = [];
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
     kept.push(line);
+    // Tested once per line, not per heredoc: one long line can open thousands of them.
+    let readsScript;
     for (const [, , delimiter] of line.matchAll(HEREDOC)) {
       // A `<<` with no delimiter line below it (`"a<<b"`, `$((1<<2))`) starts no heredoc, so
       // the lines after it still run and must still be checked.
-      const end = positions.get(delimiter)?.find(at => at > index);
+      const end = nextLine(delimiter, index);
       if (end === undefined) continue;
-      if (READS_SCRIPT.test(line)) scripts.push(lines.slice(index + 1, end).join('\n'));
+      readsScript ??= READS_SCRIPT.test(line);
+      if (readsScript) scripts.push(lines.slice(index + 1, end).join('\n'));
       index = end;
     }
   }

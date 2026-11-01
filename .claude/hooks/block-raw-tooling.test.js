@@ -295,6 +295,11 @@ describe('block-raw-tooling: allowed', () => {
     expectAllowed('cat <<EOF\n' + '\n'.repeat(40000));
     assert.ok(Date.now() - started < 2000, `took ${Date.now() - started} ms`);
   });
+  it('stays fast on many heredocs sharing one delimiter', () => {
+    const started = Date.now();
+    expectAllowed('cat ' + '<<A '.repeat(20000) + '\n' + 'A\n'.repeat(20000));
+    assert.ok(Date.now() - started < 2000, `took ${Date.now() - started} ms`);
+  });
   it('allows vitest in core', () =>
     expectAllowed('pnpm exec vitest run', path.join(ROOT, 'packages', 'core')));
 });
